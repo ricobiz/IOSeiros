@@ -1,0 +1,468 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eiros Agent Control Room</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1 class="logo">
+                    <i class="fas fa-robot"></i>
+                    Eiros Agent Control Room
+                </h1>
+            </div>
+            <div class="header-center">
+                <div class="connection-status" id="connectionStatus">
+                    <i class="fas fa-circle"></i>
+                    <span>Connecting...</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="user-menu">
+                    <button class="user-button" id="userButton">
+                        <i class="fas fa-user"></i>
+                        <span>Admin</span>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="#" onclick="showSettings()">
+                            <i class="fas fa-cog"></i> Settings
+                        </a>
+                        <a href="#" onclick="showProfile()">
+                            <i class="fas fa-user-edit"></i> Profile
+                        </a>
+                        <a href="#" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="sidebar">
+            <ul class="nav-menu">
+                <li class="nav-item active">
+                    <a href="#" onclick="showDashboard()" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" onclick="showSystemMonitor()" class="nav-link">
+                        <i class="fas fa-server"></i>
+                        <span>System Monitor</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" onclick="showTasks()" class="nav-link">
+                        <i class="fas fa-tasks"></i>
+                        <span>Tasks</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" onclick="showNotifications()" class="nav-link">
+                        <i class="fas fa-bell"></i>
+                        <span>Notifications</span>
+                        <span class="badge" id="notificationBadge">0</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" onclick="showLogs()" class="nav-link">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Logs</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" onclick="showSettings()" class="nav-link">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard View -->
+            <div id="dashboardView" class="view active">
+                <div class="view-header">
+                    <h2>Dashboard</h2>
+                    <div class="view-actions">
+                        <button class="btn btn-secondary" onclick="refreshDashboard()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- System Overview Cards -->
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>System Status</h3>
+                            <i class="fas fa-server card-icon"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="metric">
+                                <span class="metric-label">CPU Usage</span>
+                                <span class="metric-value" id="cpuUsage">--</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Memory Usage</span>
+                                <span class="metric-value" id="memoryUsage">--</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Disk Usage</span>
+                                <span class="metric-value" id="diskUsage">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Active Tasks</h3>
+                            <i class="fas fa-tasks card-icon"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="metric">
+                                <span class="metric-label">Running</span>
+                                <span class="metric-value" id="runningTasks">0</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Queued</span>
+                                <span class="metric-value" id="queuedTasks">0</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Completed</span>
+                                <span class="metric-value" id="completedTasks">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Notifications</h3>
+                            <i class="fas fa-bell card-icon"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="metric">
+                                <span class="metric-label">Unread</span>
+                                <span class="metric-value" id="unreadNotifications">0</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Alerts</span>
+                                <span class="metric-value" id="activeAlerts">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Performance</h3>
+                            <i class="fas fa-chart-line card-icon"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="metric">
+                                <span class="metric-label">Uptime</span>
+                                <span class="metric-value" id="systemUptime">--</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Response Time</span>
+                                <span class="metric-value" id="responseTime">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>System Metrics</h3>
+                        <canvas id="systemMetricsChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Task Performance</h3>
+                        <canvas id="taskPerformanceChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="activity-section">
+                    <h3>Recent Activity</h3>
+                    <div class="activity-list" id="recentActivity">
+                        <!-- Activity items will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Monitor View -->
+            <div id="systemMonitorView" class="view">
+                <div class="view-header">
+                    <h2>System Monitor</h2>
+                    <div class="view-actions">
+                        <select id="timeRangeSelect" onchange="updateTimeRange()">
+                            <option value="1h">Last Hour</option>
+                            <option value="6h">Last 6 Hours</option>
+                            <option value="24h">Last 24 Hours</option>
+                        </select>
+                        <button class="btn btn-secondary" onclick="refreshSystemMonitor()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div class="monitor-grid">
+                    <div class="monitor-section">
+                        <h3>CPU & Memory</h3>
+                        <canvas id="cpuMemoryChart"></canvas>
+                    </div>
+                    <div class="monitor-section">
+                        <h3>Disk I/O</h3>
+                        <canvas id="diskIOChart"></canvas>
+                    </div>
+                    <div class="monitor-section">
+                        <h3>Network</h3>
+                        <canvas id="networkChart"></canvas>
+                    </div>
+                    <div class="monitor-section">
+                        <h3>Process List</h3>
+                        <div class="process-list" id="processList">
+                            <!-- Process list will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tasks View -->
+            <div id="tasksView" class="view">
+                <div class="view-header">
+                    <h2>Task Management</h2>
+                    <div class="view-actions">
+                        <button class="btn btn-primary" onclick="showCreateTaskModal()">
+                            <i class="fas fa-plus"></i> Create Task
+                        </button>
+                        <button class="btn btn-secondary" onclick="refreshTasks()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tasks-container">
+                    <div class="tasks-filters">
+                        <select id="taskStatusFilter" onchange="filterTasks()">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="running">Running</option>
+                            <option value="completed">Completed</option>
+                            <option value="failed">Failed</option>
+                        </select>
+                        <select id="taskTypeFilter" onchange="filterTasks()">
+                            <option value="">All Types</option>
+                            <option value="web_automation">Web Automation</option>
+                            <option value="ocr">OCR</option>
+                            <option value="vision">Vision</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+
+                    <div class="tasks-list" id="tasksList">
+                        <!-- Tasks will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications View -->
+            <div id="notificationsView" class="view">
+                <div class="view-header">
+                    <h2>Notifications</h2>
+                    <div class="view-actions">
+                        <button class="btn btn-secondary" onclick="markAllAsRead()">
+                            <i class="fas fa-check-double"></i> Mark All Read
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearNotifications()">
+                            <i class="fas fa-trash"></i> Clear All
+                        </button>
+                    </div>
+                </div>
+
+                <div class="notifications-container">
+                    <div class="notifications-filters">
+                        <select id="notificationTypeFilter" onchange="filterNotifications()">
+                            <option value="">All Types</option>
+                            <option value="info">Info</option>
+                            <option value="warning">Warning</option>
+                            <option value="error">Error</option>
+                            <option value="alert">Alert</option>
+                        </select>
+                        <select id="notificationStatusFilter" onchange="filterNotifications()">
+                            <option value="">All</option>
+                            <option value="unread">Unread</option>
+                            <option value="read">Read</option>
+                        </select>
+                    </div>
+
+                    <div class="notifications-list" id="notificationsList">
+                        <!-- Notifications will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs View -->
+            <div id="logsView" class="view">
+                <div class="view-header">
+                    <h2>System Logs</h2>
+                    <div class="view-actions">
+                        <select id="logLevelFilter" onchange="filterLogs()">
+                            <option value="">All Levels</option>
+                            <option value="DEBUG">Debug</option>
+                            <option value="INFO">Info</option>
+                            <option value="WARNING">Warning</option>
+                            <option value="ERROR">Error</option>
+                        </select>
+                        <button class="btn btn-secondary" onclick="refreshLogs()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearLogs()">
+                            <i class="fas fa-trash"></i> Clear
+                        </button>
+                    </div>
+                </div>
+
+                <div class="logs-container">
+                    <div class="logs-list" id="logsList">
+                        <!-- Logs will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="settingsView" class="view">
+                <div class="view-header">
+                    <h2>Settings</h2>
+                    <div class="view-actions">
+                        <button class="btn btn-primary" onclick="saveSettings()">
+                            <i class="fas fa-save"></i> Save Settings
+                        </button>
+                    </div>
+                </div>
+
+                <div class="settings-container">
+                    <div class="settings-section">
+                        <h3>General</h3>
+                        <div class="setting-item">
+                            <label for="themeSelect">Theme</label>
+                            <select id="themeSelect" onchange="changeTheme()">
+                                <option value="dark">Dark</option>
+                                <option value="light">Light</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label for="refreshInterval">Refresh Interval (seconds)</label>
+                            <input type="number" id="refreshInterval" min="1" max="60" value="5">
+                        </div>
+                        <div class="setting-item">
+                            <label for="autoRefresh">Auto Refresh</label>
+                            <input type="checkbox" id="autoRefresh" checked>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>Notifications</h3>
+                        <div class="setting-item">
+                            <label for="notificationsEnabled">Enable Notifications</label>
+                            <input type="checkbox" id="notificationsEnabled" checked>
+                        </div>
+                        <div class="setting-item">
+                            <label for="soundAlerts">Sound Alerts</label>
+                            <input type="checkbox" id="soundAlerts">
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>Monitoring</h3>
+                        <div class="setting-item">
+                            <label for="cpuAlertThreshold">CPU Alert Threshold (%)</label>
+                            <input type="number" id="cpuAlertThreshold" min="1" max="100" value="80">
+                        </div>
+                        <div class="setting-item">
+                            <label for="memoryAlertThreshold">Memory Alert Threshold (%)</label>
+                            <input type="number" id="memoryAlertThreshold" min="1" max="100" value="85">
+                        </div>
+                        <div class="setting-item">
+                            <label for="diskAlertThreshold">Disk Alert Threshold (%)</label>
+                            <input type="number" id="diskAlertThreshold" min="1" max="100" value="90">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Modals -->
+        <div id="createTaskModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Create New Task</h3>
+                    <button class="modal-close" onclick="closeModal('createTaskModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="createTaskForm">
+                        <div class="form-group">
+                            <label for="taskName">Task Name</label>
+                            <input type="text" id="taskName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskType">Task Type</label>
+                            <select id="taskType" required>
+                                <option value="">Select Type</option>
+                                <option value="web_automation">Web Automation</option>
+                                <option value="ocr">OCR</option>
+                                <option value="vision">Vision</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskDescription">Description</label>
+                            <textarea id="taskDescription" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskPriority">Priority</label>
+                            <select id="taskPriority">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskConfig">Configuration (JSON)</label>
+                            <textarea id="taskConfig" rows="5" placeholder='{"key": "value"}'></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal('createTaskModal')">Cancel</button>
+                    <button class="btn btn-primary" onclick="createTask()">Create Task</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toastContainer" class="toast-container">
+            <!-- Toast notifications will be added here -->
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/websocket.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/ui.js"></script>
+</body>
+</html>
