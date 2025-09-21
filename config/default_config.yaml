@@ -1,0 +1,79 @@
+
+# EirosAgent Default Configuration
+app:
+  name: "EirosAgent"
+  version: "2.0.0"
+  debug: false
+  log_level: "INFO"
+
+web_automation:
+  browser:
+    type: "chromium"  # chromium, firefox, webkit
+    headless: true
+    timeout: 30000
+    viewport:
+      width: 1920
+      height: 1080
+    user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  
+  javascript:
+    injection_timeout: 5000
+    max_retries: 3
+    enable_stealth: true
+  
+  forms:
+    auto_fill: true
+    validation: true
+    submit_delay: 1000
+
+ocr:
+  engines:
+    primary: "easyocr"  # easyocr, paddleocr, tesseract
+    fallback: "paddleocr"
+    
+  easyocr:
+    languages: ["en", "ru"]
+    gpu: true
+    confidence_threshold: 0.5
+    
+  paddleocr:
+    languages: ["en", "ru"] 
+    use_angle_cls: true
+    use_space_char: true
+    
+  tesseract:
+    config: "--oem 3 --psm 6"
+    languages: "eng+rus"
+    
+  preprocessing:
+    enhance_contrast: true
+    denoise: true
+    resize_factor: 2.0
+
+scheduler:
+  max_concurrent_tasks: 10
+  task_timeout: 300
+  retry_attempts: 3
+  retry_delay: 5
+  
+  storage:
+    type: "file"  # file, redis, database
+    path: "./data/tasks"
+
+vision:
+  screen_capture:
+    format: "png"
+    quality: 90
+    region_detection: true
+    
+  analysis:
+    object_detection: true
+    text_detection: true
+    similarity_threshold: 0.8
+
+logging:
+  level: "INFO"
+  format: "{time:YYYY-MM-DD HH:mm:ss} | {level} | {name} | {message}"
+  file: "./logs/eiros_agent.log"
+  rotation: "1 day"
+  retention: "30 days"
