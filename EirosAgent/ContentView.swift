@@ -12,26 +12,33 @@ struct ContentView: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            ControlRoomView()
+            EnhancedControlRoomView()
                 .tabItem {
                     Image(systemName: "brain")
-                    Text("Control Room")
+                    Text("Enhanced AI")
                 }
                 .tag(0)
+            
+            VisionAnalysisView()
+                .tabItem {
+                    Image(systemName: "eye")
+                    Text("Vision")
+                }
+                .tag(1)
             
             BrowserView()
                 .tabItem {
                     Image(systemName: "globe")
                     Text("Browser")
                 }
-                .tag(1)
+                .tag(2)
             
             SettingsView()
                 .tabItem {
                     Image(systemName: "gear")
                     Text("Settings")
                 }
-                .tag(2)
+                .tag(3)
         }
     }
 }
