@@ -1,346 +1,397 @@
+# 🚀 Eiros Agent - Complete AI-Powered Automation System
 
-# EirosAgent - Advanced Web Automation and OCR System
+**Eiros Agent** is a comprehensive, multi-platform automation framework that combines advanced AI capabilities, web automation, computer vision, OCR processing, and real-time monitoring. This complete system represents the culmination of a 3-stage development process, delivering enterprise-grade automation with intelligent decision-making capabilities.
 
-EirosAgent is a comprehensive automation framework that combines advanced web automation, OCR processing, computer vision, and task scheduling capabilities. Built for Stage 2 development, it provides a robust foundation for complex automation workflows.
+## 🎯 Project Overview
 
-## Features
+Eiros Agent is built as both an **iOS application** and a **Python automation framework**, providing seamless integration between mobile and desktop automation workflows. The system features local LLM integration, advanced web automation, computer vision capabilities, and a comprehensive Control Room interface for real-time monitoring and management.
 
-### 🌐 Advanced Web Automation
-- **Multi-browser support** (Chromium, Firefox, WebKit)
-- **JavaScript injection** with stealth mode capabilities
-- **Advanced form handling** with validation and auto-fill
-- **Smart navigation** with condition-based waiting
-- **Multi-page automation** with concurrent execution
-- **Browser context management** for different scenarios
+## ✨ Complete Feature Set
 
-### 🔍 Enhanced OCR System
-- **Multiple OCR engines**: EasyOCR, PaddleOCR, Tesseract
-- **Intelligent fallback** system for maximum reliability
-- **Advanced preprocessing** with noise reduction and enhancement
-- **Structured data extraction** (forms, tables, receipts, documents)
-- **Batch processing** capabilities
-- **Engine comparison** and automatic selection
+### 🧠 **Stage 1: LLM Integration & Visual Recognition**
+- **Local LLM Integration**: On-device AI processing with llama.cpp
+- **Multimodal AI**: Support for text + vision processing
+- **Multiple Model Support**: Llama 2 7B/13B, Code Llama 7B, Mistral 7B
+- **iOS Vision Framework**: OCR text recognition and object detection
+- **Screen Analysis**: Comprehensive UI element detection and analysis
+- **SwiftUI Interface**: Modern iOS app with intuitive controls
 
-### 👁️ Computer Vision
-- **Screen capture** with multi-monitor support
-- **Object detection** and recognition
-- **Face detection** using Haar cascades
-- **UI element detection** (buttons, forms, text regions)
-- **Template matching** for image-based automation
-- **Image analysis** (colors, edges, similarity)
+### 🌐 **Stage 2: Advanced Web Automation & OCR**
+- **Multi-browser Support**: Chromium, Firefox, WebKit with Playwright
+- **JavaScript Injection**: Stealth mode capabilities and pre-built templates
+- **Advanced Form Handling**: Validation, auto-fill, and smart navigation
+- **Enhanced OCR System**: EasyOCR, PaddleOCR, Tesseract with intelligent fallback
+- **Computer Vision**: Object detection, face recognition, template matching
+- **Task Scheduling**: Flexible cron, interval, and event-based automation
+- **YAML Macro System**: Templated automation workflows with Jinja2
 
-### ⏰ Task Scheduling & Macros
-- **Flexible scheduling** (cron, interval, one-time, event-based)
-- **YAML-based macro system** with templating
-- **Conditional execution** and flow control
-- **Error handling** with retry mechanisms
-- **Task persistence** and recovery
-- **Concurrent task execution**
+### 🖥️ **Stage 3: Control Room Interface & Monitoring**
+- **Real-time Dashboard**: Live system monitoring with interactive charts
+- **WebSocket Communication**: Real-time data streaming and notifications
+- **System Monitoring**: CPU, memory, disk, network, and process tracking
+- **Task Management**: CRUD operations with execution monitoring
+- **Analytics & Metrics**: Performance analysis and trend monitoring
+- **Web Interface**: Modern responsive design with dark/light themes
+- **RESTful API**: Comprehensive endpoints for all system operations
 
-### 🛠️ Utility Systems
-- **Comprehensive logging** with rotation and retention
-- **Configuration management** with YAML/JSON support
-- **File operations** with safety checks
-- **Image processing** utilities
-- **Cross-platform compatibility**
+### 🔧 **Core Infrastructure**
+- **Cross-platform Compatibility**: Windows, macOS, Linux support
+- **Modular Architecture**: Extensible plugin system
+- **Configuration Management**: YAML/JSON with environment variables
+- **Advanced Logging**: Rotation, retention, and level filtering
+- **Error Handling**: Comprehensive retry mechanisms and notifications
+- **Security**: Local processing, secure storage, permission management
 
-## Installation
+## 📦 Installation & Setup
 
 ### Prerequisites
-- Python 3.8+
-- Node.js (for Playwright browsers)
 
-### Install Dependencies
+#### For Python Framework:
+- **Python 3.8+** (3.11+ recommended)
+- **Node.js 16+** (for web interface)
+- **Git** for version control
+
+#### For iOS Application:
+- **Xcode 15+**
+- **iOS 16+** target device or simulator
+- **macOS 13+** development environment
+
+### Quick Start
+
+#### 1. Clone the Repository
 ```bash
-pip install -r requirements.txt
-playwright install
+git clone https://github.com/ricobiz/IOSeiros.git
+cd IOSeiros
 ```
 
-### Optional Dependencies
-For enhanced functionality:
+#### 2. Python Framework Setup
 ```bash
-# For advanced OCR
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Install Playwright browsers
+playwright install
+
+# Run basic example
+python examples/basic_usage.py
+```
+
+#### 3. iOS Application Setup
+```bash
+# Open Xcode project
+open EirosAgent.xcodeproj
+
+# Build and run in Xcode
+# Select target device/simulator and press Cmd+R
+```
+
+#### 4. Control Room Interface
+```bash
+# Start with Control Room
+python examples/control_room_example.py
+
+# Access web interface at:
+# http://localhost:8080
+```
+
+### Advanced Installation
+
+#### Optional Dependencies
+```bash
+# For advanced OCR capabilities
 pip install easyocr paddleocr
 
-# For computer vision
-pip install opencv-python scikit-image
+# For computer vision features
+pip install opencv-python face-recognition mediapipe
 
-# For task scheduling
-pip install croniter
+# For machine learning features
+pip install torch transformers scikit-learn
 
-# For Windows-specific features
-pip install pywin32  # Windows only
+# For distributed task processing
+pip install redis celery
 ```
 
-## Quick Start
+#### Platform-Specific Setup
 
-### Basic Usage
+**Windows:**
+```bash
+# Install Windows-specific dependencies
+pip install pywin32 wmi
+```
+
+**macOS:**
+```bash
+# Install macOS-specific dependencies
+pip install pyobjc-framework-Quartz pyobjc-framework-ApplicationServices
+```
+
+**Linux:**
+```bash
+# Install Linux-specific dependencies
+sudo apt-get install python3-xlib libcairo2-dev
+pip install python3-xlib pycairo
+```
+
+## 🚀 Usage Examples
+
+### Python Framework
+
+#### Basic Automation
 ```python
 import asyncio
 from eiros_agent import EirosAgent
 
 async def main():
-    # Initialize agent
+    # Initialize agent with configuration
     agent = EirosAgent("config/default_config.yaml")
+    await agent.initialize()
     
-    try:
-        # Initialize all subsystems
-        await agent.initialize()
-        
-        # Capture and analyze screen
-        result = await agent.capture_and_analyze_screen()
-        print(f"Extracted {len(result['ocr_result']['text'])} characters")
-        
-        # Execute web automation
-        task_config = {
-            "name": "google_search",
-            "steps": [
-                {
-                    "name": "navigate",
-                    "action": "navigate",
-                    "params": {"url": "https://www.google.com"}
-                },
-                {
-                    "name": "search",
-                    "action": "fill",
-                    "params": {
-                        "selector": "input[name='q']",
-                        "value": "EirosAgent"
-                    }
-                }
-            ]
-        }
-        
-        result = await agent.automate_web_task(task_config)
-        print(f"Web automation: {result['status']}")
-        
-    finally:
-        await agent.shutdown()
+    # Screen capture and OCR
+    result = await agent.capture_and_analyze_screen()
+    print(f"Extracted text: {result['ocr_result']['text']}")
+    
+    # Web automation
+    await agent.web_automation.navigate("https://example.com")
+    await agent.web_automation.fill_form({
+        "input[name='search']": "automation"
+    })
+    
+    await agent.cleanup()
 
 if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-### Macro Execution
+#### Control Room Integration
 ```python
-# Execute a macro file
-result = await agent.execute_macro(
-    "config/macros/example_macro.yaml",
-    variables={"target_url": "https://example.com"}
-)
+from eiros_agent.core.control_room_integration import EirosAgentWithControlRoom
+
+async def main():
+    # Initialize with Control Room
+    agent = EirosAgentWithControlRoom("config/control_room_config.yaml")
+    await agent.initialize()
+    
+    # Access Control Room at http://localhost:8080
+    print(f"Control Room: {agent.get_control_room_url()}")
+    
+    # Keep running for monitoring
+    await agent.run_forever()
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
-### Advanced OCR
+#### Advanced OCR Processing
 ```python
-# Compare OCR engines
-screenshot = await agent.vision_manager.capture_screen()
-comparison = await agent.ocr_manager.compare_engines(screenshot)
-print(f"Best engine: {comparison['recommendation']}")
+from eiros_agent.ocr import OCRManager
 
-# Extract structured data
-structured_result = await agent.ocr_manager.extract_structured_data(
-    screenshot,
-    structure_config={"type": "form", "fields": {"name": {"pattern": "Name:"}}}
-)
+async def main():
+    ocr = OCRManager()
+    
+    # Process image with multiple engines
+    result = await ocr.process_image(
+        "screenshot.png",
+        engines=["easyocr", "paddleocr", "tesseract"],
+        preprocessing=True
+    )
+    
+    # Extract structured data
+    structured = await ocr.extract_structured_data(
+        result, 
+        data_type="form"
+    )
+    
+    print(f"Extracted fields: {structured}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
-## Configuration
+### iOS Application
 
-### Main Configuration (`config/default_config.yaml`)
+#### Basic Usage
+```swift
+import SwiftUI
+
+struct ContentView: View {
+    @StateObject private var llmManager = EnhancedLLMManager.shared
+    @StateObject private var visionManager = VisionManager.shared
+    
+    var body: some View {
+        TabView {
+            // Enhanced Control Room with AI chat
+            EnhancedControlRoomView()
+                .tabItem {
+                    Image(systemName: "brain.head.profile")
+                    Text("AI Chat")
+                }
+            
+            // Vision analysis and OCR
+            VisionAnalysisView()
+                .tabItem {
+                    Image(systemName: "eye")
+                    Text("Vision")
+                }
+            
+            // Web automation browser
+            BrowserView()
+                .tabItem {
+                    Image(systemName: "globe")
+                    Text("Browser")
+                }
+        }
+    }
+}
+```
+
+#### Screen Analysis
+```swift
+// Capture and analyze screen
+let screenshot = await ScreenCaptureManager.shared.captureScreen()
+let analysis = await VisionManager.shared.analyzeScreen(screenshot)
+
+print("Detected UI elements: \(analysis.uiElements.count)")
+print("Extracted text: \(analysis.ocrResult.text)")
+```
+## 🔧 Configuration
+
+### Control Room Configuration (`config/control_room_config.yaml`)
 ```yaml
-app:
-  name: "EirosAgent"
-  version: "2.0.0"
-  debug: false
+control_room:
+  web_server:
+    host: "localhost"
+    port: 8080
+    debug: false
+  
+  websocket_server:
+    host: "localhost"
+    port: 8765
+  
+  monitoring:
+    system_metrics_interval: 5  # seconds
+    process_monitoring: true
+    network_monitoring: true
+  
+  notifications:
+    max_notifications: 1000
+    retention_days: 30
 
-web_automation:
-  browser:
-    type: "chromium"
+agent:
+  name: "EirosAgent"
+  version: "1.0.0"
+  
+  web_automation:
+    browser: "chromium"
     headless: true
     timeout: 30000
-  javascript:
-    enable_stealth: true
-    injection_timeout: 5000
-  forms:
-    auto_fill: true
-    validation: true
-
-ocr:
-  engines:
-    primary: "easyocr"
-    fallback: "paddleocr"
-  easyocr:
-    languages: ["en", "ru"]
-    gpu: true
-  preprocessing:
-    enhance_contrast: true
-    denoise: true
-
-scheduler:
-  max_concurrent_tasks: 10
-  task_timeout: 300
-  retry_attempts: 3
-
-vision:
-  screen_capture:
-    format: "png"
-    quality: 90
-  analysis:
+  
+  ocr:
+    primary_engine: "easyocr"
+    languages: ["en", "ru", "es"]
+    preprocessing: true
+  
+  vision:
+    screen_capture_format: "png"
     object_detection: true
-    text_detection: true
 ```
 
-### Macro Configuration (`config/macros/example_macro.yaml`)
-```yaml
-name: "web_scraping_example"
-description: "Example web scraping automation macro"
+## 🌐 API Reference
 
-triggers:
-  - type: "time"
-    schedule: "0 9 * * *"  # Daily at 9 AM
+### Control Room REST API
 
-variables:
-  target_url: "https://example.com"
-  output_file: "./data/scraped_data.json"
+#### System Monitoring
+- `GET /api/v1/system/metrics` - Get current system metrics
+- `GET /api/v1/system/processes` - List running processes
+- `GET /api/v1/system/health` - System health check
 
-steps:
-  - name: "open_browser"
-    action: "web.open_browser"
-    params:
-      headless: true
-      
-  - name: "navigate_to_site"
-    action: "web.navigate"
-    params:
-      url: "{{ variables.target_url }}"
-      
-  - name: "extract_data"
-    action: "web.inject_js"
-    params:
-      script: |
-        return Array.from(document.querySelectorAll('.item')).map(item => ({
-          title: item.querySelector('.title')?.textContent,
-          description: item.querySelector('.description')?.textContent
-        }));
-        
-  - name: "save_data"
-    action: "data.save_json"
-    params:
-      data: "{{ steps.extract_data.result }}"
-      file: "{{ variables.output_file }}"
+#### Task Management
+- `GET /api/v1/tasks` - List all tasks
+- `POST /api/v1/tasks` - Create new task
+- `GET /api/v1/tasks/{id}` - Get task details
+- `PUT /api/v1/tasks/{id}` - Update task
+- `DELETE /api/v1/tasks/{id}` - Delete task
 
-error_handling:
-  on_error: "continue"
-  max_retries: 3
+#### Notifications
+- `GET /api/v1/notifications` - List notifications
+- `POST /api/v1/notifications` - Create notification
+- `PUT /api/v1/notifications/{id}/read` - Mark as read
+
+#### WebSocket Events
+- `system_metrics` - Real-time system metrics
+- `task_update` - Task status changes
+- `notification` - New notifications
+- `log_entry` - System log entries
+
+## 📁 Project Structure
+
+```
+IOSeiros/
+├── EirosAgent.xcodeproj/          # iOS Xcode project
+├── EirosAgent/                    # iOS application source
+│   ├── Managers/                  # Core managers (LLM, Vision, WebView)
+│   ├── Views/                     # SwiftUI views
+│   ├── Models/                    # Data models
+│   └── Resources/                 # JavaScript and assets
+├── eiros_agent/                   # Python framework
+│   ├── core/                      # Core agent and configuration
+│   ├── web_automation/            # Web automation modules
+│   ├── ocr/                       # OCR processing system
+│   ├── vision/                    # Computer vision capabilities
+│   ├── scheduler/                 # Task scheduling system
+│   ├── control_room/              # Control Room interface
+│   └── utils/                     # Utility functions
+├── config/                        # Configuration files
+├── examples/                      # Usage examples
+├── tests/                         # Test suites
+└── requirements.txt               # Python dependencies
 ```
 
-## Architecture
+## 🧪 Testing
 
-### Core Components
-- **EirosAgent**: Main orchestrator class
-- **Config**: Configuration management system
-- **Exceptions**: Custom exception hierarchy
-
-### Web Automation
-- **WebAutomationManager**: Orchestrates browser automation
-- **JSInjector**: Advanced JavaScript injection system
-- **FormHandler**: Intelligent form processing
-- **BrowserController**: Browser instance management
-- **NavigationManager**: Smart page navigation
-
-### OCR System
-- **AdvancedOCRManager**: Multi-engine OCR orchestrator
-- **OCR Engines**: EasyOCR, PaddleOCR, Tesseract implementations
-- **ImagePreprocessor**: Advanced image enhancement
-- **TextPostprocessor**: Text cleanup and validation
-
-### Computer Vision
-- **VisionManager**: Vision system orchestrator
-- **ScreenCaptureManager**: Multi-platform screen capture
-- **ImageAnalyzer**: Advanced image analysis
-- **ObjectDetector**: Object and face detection
-
-### Task Scheduling
-- **TaskScheduler**: Advanced task scheduling system
-- **MacroEngine**: YAML-based macro execution
-- **TaskManager**: Individual task lifecycle management
-- **Triggers**: Time, event, and condition-based triggers
-
-## Examples
-
-See the `examples/` directory for comprehensive usage examples:
-- `basic_usage.py`: Basic EirosAgent functionality
-- `advanced_web_automation.py`: Complex web automation scenarios
-
-## Testing
-
-Run the test suite:
 ```bash
+# Run all tests
 pytest tests/
-```
 
-Run specific test modules:
-```bash
+# Run specific test modules
 pytest tests/test_core.py
 pytest tests/test_web_automation.py
+
+# Run with coverage
+pytest --cov=eiros_agent tests/
 ```
 
-## Development
+## 🤝 Contributing
 
-### Project Structure
-```
-eiros_agent/
-├── core/                 # Core system components
-├── web_automation/       # Web automation modules
-├── ocr/                 # OCR processing system
-├── vision/              # Computer vision components
-├── scheduler/           # Task scheduling system
-└── utils/               # Utility functions
-
-config/                  # Configuration files
-├── default_config.yaml
-└── macros/             # Macro definitions
-
-examples/               # Usage examples
-tests/                  # Test suite
-```
-
-### Contributing
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Run the test suite
-6. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## License
+## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Support
+## 🙏 Acknowledgments
+
+- **llama.cpp** for local LLM integration
+- **Playwright** for web automation capabilities
+- **EasyOCR, PaddleOCR, Tesseract** for OCR processing
+- **OpenCV** for computer vision features
+- **Chart.js** for real-time data visualization
+- **SwiftUI** for modern iOS interface design
+
+## 📞 Support
 
 For support and questions:
 - Create an issue on GitHub
-- Check the examples directory for usage patterns
-- Review the configuration documentation
-
-## Roadmap
-
-### Stage 2 Completed Features ✅
-- Advanced web automation with JavaScript injection
-- Multi-engine OCR system with preprocessing
-- Computer vision and screen capture
-- Task scheduling with macro support
-- Comprehensive configuration system
-
-### Future Enhancements
-- Machine learning model integration
-- Advanced AI-powered decision making
-- Cloud deployment capabilities
-- REST API interface
-- Plugin system for extensibility
-- Enhanced security features
+- Check the [documentation](docs/)
+- Review the [examples](examples/) directory
 
 ---
 
-**EirosAgent** - Empowering automation through intelligent systems.
+**🚨 Important**: For private repository access, ensure GitHub App permissions are granted at: [GitHub App Configuration](https://github.com/apps/abacusai/installations/select_target)
