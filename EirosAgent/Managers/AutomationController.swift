@@ -34,6 +34,7 @@ class AutomationController: ObservableObject {
     private let qwen2VLManager = Qwen2VLManager.shared
     private let openRouterManager = OpenRouterManager.shared
     private let enhancedLLMManager = EnhancedLLMManager.shared
+    private let aiRoleManager = AIRoleManager.shared
     
     // MARK: - Private Properties
     private var webViewManager: WebViewManager?
@@ -106,7 +107,25 @@ class AutomationController: ObservableObject {
         
         addLogEntry("Starting task: \(task.name)", type: .info)
         
+        // Create AI task for role-based planning
+        let aiTask = AITask(
+            title: task.name,
+            description: task.description,
+            type: .execution,
+            priority: mapPriority(task.priority),
+            context: "Automation task with \(task.steps.count) steps",
+            parameters: [
+                "automation_task_id": task.id.uuidString,
+                "step_count": String(task.steps.count),
+                "estimated_duration": String(task.estimatedDuration)
+            ]
+        )
+        
         do {
+            // Get AI role assistance for task planning
+            let aiResult = await aiRoleManager.processTask(aiTask)
+            addLogEntry("AI Role analysis: \(aiResult.result.prefix(100))...", type: .info)
+            
             let success = try await performTaskExecution(task)
             
             if success {
@@ -456,6 +475,10 @@ class AutomationController: ObservableObject {
         if config.enableLogging {
             print("AutomationController: [\(type.rawValue.uppercased())] \(message)")
         }
+    }
+    
+    private func mapPriority(_ priority: TaskPriority) -> TaskPriority {
+        return priority // Direct mapping since both enums have same cases
     }
     
     // MARK: - Public Interface

@@ -19,33 +19,47 @@ struct ContentView: View {
                 }
                 .tag(0)
             
+            RoleSwitcherView()
+                .tabItem {
+                    Image(systemName: "person.3")
+                    Text("ИИ Роли")
+                }
+                .tag(1)
+            
+            AIRoleMonitorView()
+                .tabItem {
+                    Image(systemName: "chart.bar")
+                    Text("Мониторинг")
+                }
+                .tag(2)
+            
             VisionAnalysisView()
                 .tabItem {
                     Image(systemName: "eye")
                     Text("Vision")
                 }
-                .tag(1)
+                .tag(3)
             
             BrowserView()
                 .tabItem {
                     Image(systemName: "globe")
                     Text("Browser")
                 }
-                .tag(2)
+                .tag(4)
             
             AutomationMonitorView()
                 .tabItem {
                     Image(systemName: "gearshape.2.fill")
                     Text("Automation")
                 }
-                .tag(3)
+                .tag(5)
             
             SettingsView()
                 .tabItem {
                     Image(systemName: "gear")
                     Text("Settings")
                 }
-                .tag(4)
+                .tag(6)
         }
     }
 }
