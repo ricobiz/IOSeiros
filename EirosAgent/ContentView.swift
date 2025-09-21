@@ -9,36 +9,51 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var selectedTab = 0
+    @StateObject private var touchGridSystem = TouchGridSystem.shared
     
     var body: some View {
-        TabView(selection: $selectedTab) {
-            EnhancedControlRoomView()
-                .tabItem {
-                    Image(systemName: "brain")
-                    Text("Enhanced AI")
-                }
-                .tag(0)
+        ZStack {
+            TabView(selection: $selectedTab) {
+                EnhancedControlRoomView()
+                    .tabItem {
+                        Image(systemName: "brain")
+                        Text("Enhanced AI")
+                    }
+                    .tag(0)
+                
+                Qwen2VLControlView()
+                    .tabItem {
+                        Image(systemName: "eye.circle")
+                        Text("Qwen2-VL")
+                    }
+                    .tag(1)
+                
+                VisionAnalysisView()
+                    .tabItem {
+                        Image(systemName: "eye")
+                        Text("Vision")
+                    }
+                    .tag(2)
+                
+                BrowserView()
+                    .tabItem {
+                        Image(systemName: "globe")
+                        Text("Browser")
+                    }
+                    .tag(3)
+                
+                SettingsView()
+                    .tabItem {
+                        Image(systemName: "gear")
+                        Text("Settings")
+                    }
+                    .tag(4)
+            }
             
-            VisionAnalysisView()
-                .tabItem {
-                    Image(systemName: "eye")
-                    Text("Vision")
-                }
-                .tag(1)
-            
-            BrowserView()
-                .tabItem {
-                    Image(systemName: "globe")
-                    Text("Browser")
-                }
-                .tag(2)
-            
-            SettingsView()
-                .tabItem {
-                    Image(systemName: "gear")
-                    Text("Settings")
-                }
-                .tag(3)
+            // Touch Grid Overlay
+            TouchGridOverlayView()
+                .allowsHitTesting(false)
+                .ignoresSafeArea()
         }
     }
 }

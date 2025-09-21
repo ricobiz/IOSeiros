@@ -29,6 +29,11 @@ class VisionManager: NSObject, ObservableObject {
     private var processingTimes: [TimeInterval] = []
     private let maxProcessingHistory = 10
     
+    // Qwen2-VL Integration
+    private let qwen2VLManager = Qwen2VLManager.shared
+    private let coordinateMapper = CoordinateMapper.shared
+    @Published var useQwen2VL = true // Toggle for using Qwen2-VL vs traditional Vision
+    
     override init() {
         super.init()
     }
@@ -208,7 +213,43 @@ class VisionManager: NSObject, ObservableObject {
             updateProcessingMetrics(startTime: startTime)
         }
         
-        // Perform comprehensive screen analysis
+        var result: ScreenAnalysisResult
+        
+        if useQwen2VL && qwen2VLManager.isModelLoaded {
+            // Use Qwen2-VL for enhanced UI analysis
+            result = await analyzeScreenWithQwen2VL(image, startTime: startTime)
+        } else {
+            // Use traditional Vision framework
+            result = await analyzeScreenWithVision(image, startTime: startTime)
+        }
+        
+        self.lastAnalysisResult = result
+        return result
+    }
+    
+    private func analyzeScreenWithQwen2VL(_ image: UIImage, startTime: Date) async -> ScreenAnalysisResult {
+        // Use Qwen2-VL for comprehensive UI automation analysis
+        let task = UIAutomationTask(type: .describeScreen, target: "comprehensive analysis")
+        let qwenResult = await qwen2VLManager.analyzeScreenForUIAutomation(image, task: task)
+        
+        // Convert Qwen2-VL results to VisionManager format
+        let detectedTexts = convertQwenElementsToDetectedText(qwenResult.elements)
+        let detectedObjects = convertQwenElementsToDetectedObjects(qwenResult.elements)
+        let uiElements = convertQwenElementsToUIElements(qwenResult.elements)
+        
+        return ScreenAnalysisResult(
+            timestamp: Date(),
+            detectedText: detectedTexts,
+            detectedObjects: detectedObjects,
+            uiElements: uiElements,
+            screenDescription: qwenResult.modelResponse ?? generateScreenDescription(texts: detectedTexts, objects: detectedObjects, elements: uiElements),
+            processingTime: Date().timeIntervalSince(startTime),
+            qwen2VLResult: qwenResult
+        )
+    }
+    
+    private func analyzeScreenWithVision(_ image: UIImage, startTime: Date) async -> ScreenAnalysisResult {
+        // Perform comprehensive screen analysis with traditional Vision
         async let textResults = recognizeText(in: image)
         async let objectResults = detectObjects(in: image)
         async let uiElements = analyzeUIElements(in: image)
@@ -217,7 +258,7 @@ class VisionManager: NSObject, ObservableObject {
         let objects = await objectResults
         let elements = await uiElements
         
-        let result = ScreenAnalysisResult(
+        return ScreenAnalysisResult(
             timestamp: Date(),
             detectedText: texts,
             detectedObjects: objects,
@@ -225,9 +266,100 @@ class VisionManager: NSObject, ObservableObject {
             screenDescription: generateScreenDescription(texts: texts, objects: objects, elements: elements),
             processingTime: Date().timeIntervalSince(startTime)
         )
+    }
+    
+    // MARK: - Qwen2-VL Integration Methods
+    
+    func findUIElementWithQwen2VL(_ target: String, in image: UIImage) async -> [UIElement] {
+        guard qwen2VLManager.isModelLoaded else { return [] }
         
-        self.lastAnalysisResult = result
-        return result
+        let task = UIAutomationTask(type: .findElement, target: target)
+        let result = await qwen2VLManager.analyzeScreenForUIAutomation(image, task: task)
+        
+        return convertQwenElementsToUIElements(result.elements)
+    }
+    
+    func extractTextWithQwen2VL(from image: UIImage) async -> [DetectedText] {
+        guard qwen2VLManager.isModelLoaded else { return [] }
+        
+        let task = UIAutomationTask(type: .extractText, target: "all text")
+        let result = await qwen2VLManager.analyzeScreenForUIAutomation(image, task: task)
+        
+        return convertQwenElementsToDetectedText(result.elements)
+    }
+    
+    func findClickableElementsWithQwen2VL(in image: UIImage) async -> [CGPoint] {
+        guard qwen2VLManager.isModelLoaded else { return [] }
+        
+        return await qwen2VLManager.findClickableElements(in: image)
+    }
+    
+    // MARK: - Conversion Methods
+    
+    private func convertQwenElementsToDetectedText(_ elements: [UIAutomationElement]) -> [DetectedText] {
+        return elements.compactMap { element in
+            guard element.type == .text || element.type == .label || !element.text.isEmpty else { return nil }
+            
+            return DetectedText(
+                text: element.text,
+                confidence: Float(element.confidence),
+                boundingBox: element.boundingBox,
+                normalizedBoundingBox: coordinateMapper.convertScreenToNormalized(
+                    element.boundingBox.origin,
+                    screenSize: UIScreen.main.bounds.size
+                ).applying(CGAffineTransform(scaleX: element.boundingBox.width / UIScreen.main.bounds.width,
+                                           y: element.boundingBox.height / UIScreen.main.bounds.height))
+            )
+        }
+    }
+    
+    private func convertQwenElementsToDetectedObjects(_ elements: [UIAutomationElement]) -> [DetectedObject] {
+        return elements.compactMap { element in
+            guard element.type == .button || element.type == .image || element.isInteractable else { return nil }
+            
+            let objectType: ObjectType = {
+                switch element.type {
+                case .button: return .button
+                case .image: return .image
+                default: return .unknown
+                }
+            }()
+            
+            return DetectedObject(
+                label: element.text.isEmpty ? element.type.rawValue : element.text,
+                confidence: Float(element.confidence),
+                boundingBox: element.boundingBox,
+                normalizedBoundingBox: coordinateMapper.convertScreenToNormalized(
+                    element.boundingBox.origin,
+                    screenSize: UIScreen.main.bounds.size
+                ).applying(CGAffineTransform(scaleX: element.boundingBox.width / UIScreen.main.bounds.width,
+                                           y: element.boundingBox.height / UIScreen.main.bounds.height)),
+                objectType: objectType
+            )
+        }
+    }
+    
+    private func convertQwenElementsToUIElements(_ elements: [UIAutomationElement]) -> [UIElement] {
+        return elements.map { element in
+            let uiElementType: UIElementType = {
+                switch element.type {
+                case .button: return .button
+                case .textField: return .textField
+                case .text: return .text
+                case .label: return .label
+                case .image: return .image
+                default: return .unknown
+                }
+            }()
+            
+            return UIElement(
+                type: uiElementType,
+                text: element.text,
+                boundingBox: element.boundingBox,
+                confidence: Float(element.confidence),
+                isInteractable: element.isInteractable
+            )
+        }
     }
     
     // MARK: - Helper Methods
@@ -372,4 +504,15 @@ struct ScreenAnalysisResult: Identifiable, Codable {
     let uiElements: [UIElement]
     let screenDescription: String
     let processingTime: TimeInterval
+    let qwen2VLResult: UIAutomationResult?
+    
+    init(timestamp: Date, detectedText: [DetectedText], detectedObjects: [DetectedObject], uiElements: [UIElement], screenDescription: String, processingTime: TimeInterval, qwen2VLResult: UIAutomationResult? = nil) {
+        self.timestamp = timestamp
+        self.detectedText = detectedText
+        self.detectedObjects = detectedObjects
+        self.uiElements = uiElements
+        self.screenDescription = screenDescription
+        self.processingTime = processingTime
+        self.qwen2VLResult = qwen2VLResult
+    }
 }

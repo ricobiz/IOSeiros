@@ -28,6 +28,8 @@ class EnhancedLLMManager: ObservableObject {
     // Vision integration
     private let visionManager = VisionManager.shared
     private let screenCaptureManager = ScreenCaptureManager.shared
+    private let qwen2VLManager = Qwen2VLManager.shared
+    private let touchGridSystem = TouchGridSystem.shared
     
     // Model information
     var modelInfo: EnhancedModelInfo? {
@@ -239,6 +241,229 @@ class EnhancedLLMManager: ObservableObject {
         }
     }
     
+    // MARK: - Qwen2-VL Enhanced Features
+    
+    func performUIAutomation(task: String) async {
+        guard let screenshot = await screenCaptureManager.captureScreen() else {
+            let errorMessage = EnhancedChatMessage(
+                content: "Failed to capture screenshot for UI automation.",
+                isUser: false,
+                messageType: .error,
+                attachments: []
+            )
+            chatHistory.append(errorMessage)
+            return
+        }
+        
+        // Determine task type from natural language
+        let automationTask = parseUIAutomationTask(from: task)
+        let result = await qwen2VLManager.analyzeScreenForUIAutomation(screenshot, task: automationTask)
+        
+        var responseContent = ""
+        
+        if result.success {
+            responseContent = """
+            🎯 **UI Automation Analysis Complete**
+            
+            **Task**: \(task)
+            **Elements Found**: \(result.elements.count)
+            **Confidence**: \(Int(result.confidence * 100))%
+            **Processing Time**: \(String(format: "%.2fs", result.processingTime))
+            
+            """
+            
+            if !result.elements.isEmpty {
+                responseContent += "**Detected Elements**:\n"
+                for (index, element) in result.elements.enumerated() {
+                    responseContent += "\(index + 1). \(element.type.rawValue.capitalized): '\(element.text)'\n"
+                    responseContent += "   Position: (\(Int(element.boundingBox.midX)), \(Int(element.boundingBox.midY)))\n"
+                    if element.isInteractable {
+                        responseContent += "   ✅ Interactable\n"
+                    }
+                }
+            }
+            
+            if !result.coordinates.isEmpty {
+                responseContent += "\n**Touch Coordinates**:\n"
+                for (index, coordinate) in result.coordinates.enumerated() {
+                    responseContent += "\(index + 1). (\(Int(coordinate.x)), \(Int(coordinate.y)))\n"
+                }
+                
+                // Highlight elements on touch grid
+                touchGridSystem.highlightElementsOnGrid(result.elements)
+            }
+            
+            if let modelResponse = result.modelResponse {
+                responseContent += "\n**Qwen2-VL Analysis**:\n\(modelResponse)"
+            }
+            
+        } else {
+            responseContent = "❌ UI Automation failed: \(result.error ?? "Unknown error")"
+        }
+        
+        let message = EnhancedChatMessage(
+            content: responseContent,
+            isUser: false,
+            messageType: .vision,
+            attachments: []
+        )
+        chatHistory.append(message)
+    }
+    
+    func simulateTouch(at description: String) async {
+        guard let screenshot = await screenCaptureManager.captureScreen() else {
+            let errorMessage = EnhancedChatMessage(
+                content: "Failed to capture screenshot for touch simulation.",
+                isUser: false,
+                messageType: .error,
+                attachments: []
+            )
+            chatHistory.append(errorMessage)
+            return
+        }
+        
+        let task = UIAutomationTask(type: .clickElement, target: description)
+        let result = await qwen2VLManager.analyzeScreenForUIAutomation(screenshot, task: task)
+        
+        if result.success && !result.coordinates.isEmpty {
+            let touchPoint = result.coordinates.first!
+            
+            // Map to grid system
+            let gridCoordinate = touchGridSystem.coordinateMapper.mapToTouchGrid(touchPoint, gridSize: touchGridSystem.gridSize)
+            touchGridSystem.selectCell(at: gridCoordinate)
+            
+            let message = EnhancedChatMessage(
+                content: """
+                🎯 **Touch Simulation Ready**
+                
+                **Target**: \(description)
+                **Touch Point**: (\(Int(touchPoint.x)), \(Int(touchPoint.y)))
+                **Grid Cell**: \(gridCoordinate.description)
+                **Confidence**: \(Int(result.confidence * 100))%
+                
+                The touch point has been highlighted on the grid. You can now execute the touch action.
+                """,
+                isUser: false,
+                messageType: .vision,
+                attachments: []
+            )
+            chatHistory.append(message)
+        } else {
+            let message = EnhancedChatMessage(
+                content: "❌ Could not locate '\(description)' for touch simulation. \(result.error ?? "")",
+                isUser: false,
+                messageType: .error,
+                attachments: []
+            )
+            chatHistory.append(message)
+        }
+    }
+    
+    func analyzeScreenWithQwen2VL() async {
+        guard let screenshot = await screenCaptureManager.captureScreen() else {
+            let errorMessage = EnhancedChatMessage(
+                content: "Failed to capture screenshot for Qwen2-VL analysis.",
+                isUser: false,
+                messageType: .error,
+                attachments: []
+            )
+            chatHistory.append(errorMessage)
+            return
+        }
+        
+        let task = UIAutomationTask(type: .describeScreen, target: "comprehensive analysis")
+        let result = await qwen2VLManager.analyzeScreenForUIAutomation(screenshot, task: task)
+        
+        var responseContent = """
+        🔍 **Qwen2-VL Screen Analysis**
+        
+        **Model**: Qwen2-VL-2B (2B parameters)
+        **Processing Time**: \(String(format: "%.2fs", result.processingTime))
+        **Confidence**: \(Int(result.confidence * 100))%
+        
+        """
+        
+        if result.success {
+            responseContent += """
+            **UI Elements Detected**: \(result.elements.count)
+            **Interactive Elements**: \(result.elements.filter { $0.isInteractable }.count)
+            **Touch Points**: \(result.coordinates.count)
+            
+            """
+            
+            // Group elements by type
+            let elementsByType = Dictionary(grouping: result.elements) { $0.type }
+            
+            for (type, elements) in elementsByType {
+                responseContent += "**\(type.rawValue.capitalized)s** (\(elements.count)):\n"
+                for element in elements.prefix(3) {
+                    responseContent += "• \(element.text.isEmpty ? "Unnamed \(type.rawValue)" : element.text)\n"
+                }
+                if elements.count > 3 {
+                    responseContent += "• ... and \(elements.count - 3) more\n"
+                }
+                responseContent += "\n"
+            }
+            
+            if let modelResponse = result.modelResponse {
+                responseContent += "**Detailed Analysis**:\n\(modelResponse)"
+            }
+            
+            // Highlight elements on grid
+            touchGridSystem.highlightElementsOnGrid(result.elements)
+            
+        } else {
+            responseContent += "❌ Analysis failed: \(result.error ?? "Unknown error")"
+        }
+        
+        let message = EnhancedChatMessage(
+            content: responseContent,
+            isUser: false,
+            messageType: .vision,
+            attachments: []
+        )
+        chatHistory.append(message)
+    }
+    
+    private func parseUIAutomationTask(from description: String) -> UIAutomationTask {
+        let lowercased = description.lowercased()
+        
+        if lowercased.contains("find") && lowercased.contains("button") {
+            let target = extractTarget(from: description, keywords: ["button"])
+            return UIAutomationTask(type: .findButton, target: target)
+        } else if lowercased.contains("find") && (lowercased.contains("text") || lowercased.contains("field")) {
+            let target = extractTarget(from: description, keywords: ["text", "field", "input"])
+            return UIAutomationTask(type: .findTextField, target: target)
+        } else if lowercased.contains("click") || lowercased.contains("tap") {
+            let target = extractTarget(from: description, keywords: ["click", "tap"])
+            return UIAutomationTask(type: .clickElement, target: target)
+        } else if lowercased.contains("extract") && lowercased.contains("text") {
+            return UIAutomationTask(type: .extractText, target: "all text")
+        } else if lowercased.contains("describe") || lowercased.contains("analyze") {
+            return UIAutomationTask(type: .describeScreen, target: "screen analysis")
+        } else if lowercased.contains("navigate") || lowercased.contains("go to") {
+            let target = extractTarget(from: description, keywords: ["navigate", "go to"])
+            return UIAutomationTask(type: .navigateToElement, target: target)
+        } else {
+            // Default to finding element
+            return UIAutomationTask(type: .findElement, target: description)
+        }
+    }
+    
+    private func extractTarget(from description: String, keywords: [String]) -> String {
+        var target = description
+        
+        // Remove common keywords to extract the actual target
+        for keyword in keywords {
+            target = target.replacingOccurrences(of: keyword, with: "", options: .caseInsensitive)
+        }
+        
+        // Clean up the target string
+        target = target.trimmingCharacters(in: .whitespacesAndPunctuationCharacters)
+        
+        return target.isEmpty ? description : target
+    }
+    
     // MARK: - Response Generation
     
     private func generateEnhancedResponse(for prompt: String, attachments: [MessageAttachment]) async -> EnhancedChatMessage {
@@ -323,16 +548,68 @@ class EnhancedLLMManager: ObservableObject {
     }
     
     private func generateTextResponse(for prompt: String) async -> EnhancedChatMessage {
+        // Check for Qwen2-VL specific commands first
+        let lowercased = prompt.lowercased()
+        
+        // UI Automation commands
+        if lowercased.contains("find") && (lowercased.contains("button") || lowercased.contains("element") || lowercased.contains("field")) {
+            await performUIAutomation(task: prompt)
+            return EnhancedChatMessage(content: "", isUser: false, messageType: .vision, attachments: []) // Empty as performUIAutomation handles the response
+        } else if lowercased.contains("click") || lowercased.contains("tap") {
+            await simulateTouch(at: prompt)
+            return EnhancedChatMessage(content: "", isUser: false, messageType: .vision, attachments: [])
+        } else if lowercased.contains("analyze") && lowercased.contains("qwen") {
+            await analyzeScreenWithQwen2VL()
+            return EnhancedChatMessage(content: "", isUser: false, messageType: .vision, attachments: [])
+        } else if lowercased.contains("grid") || lowercased.contains("touch grid") {
+            let gridStats = touchGridSystem.getGridStatistics()
+            return EnhancedChatMessage(
+                content: """
+                📊 **Touch Grid System Status**
+                
+                **Grid Configuration**: \(Int(gridStats.gridSize.width))×\(Int(gridStats.gridSize.height))
+                **Total Cells**: \(gridStats.totalCells)
+                **Cell Size**: \(Int(gridStats.cellSize.width))×\(Int(gridStats.cellSize.height)) pixels
+                **Grid Visible**: \(touchGridSystem.isGridVisible ? "Yes" : "No")
+                
+                **Commands**:
+                • "Show grid" - Display touch grid overlay
+                • "Hide grid" - Hide touch grid overlay
+                • "Find button [name]" - Locate and highlight UI elements
+                • "Click [element]" - Simulate touch on element
+                
+                The touch grid helps visualize and target UI elements for automation.
+                """,
+                isUser: false,
+                messageType: .text,
+                attachments: []
+            )
+        }
+        
         // Simulate processing time based on model
         let processingTime = UInt64.random(in: 1_000_000_000...3_000_000_000)
         try? await Task.sleep(nanoseconds: processingTime)
         
         // Enhanced responses based on prompt content
-        let lowercased = prompt.lowercased()
-        
         if lowercased.contains("hello") || lowercased.contains("hi") {
             return EnhancedChatMessage(
-                content: "Hello! I'm your enhanced AI assistant with visual capabilities. I can analyze images, capture screenshots, extract text, and help automate tasks. What would you like to explore?",
+                content: """
+                Hello! I'm your enhanced AI assistant powered by Qwen2-VL-2B for advanced UI automation. 
+                
+                🎯 **New Capabilities**:
+                • Mobile UI element detection (90.8% accuracy on Android Control)
+                • Screen element positioning (84.7% accuracy on ScreenSpot)
+                • Natural language UI automation
+                • Touch grid system for precise interactions
+                
+                Try commands like:
+                • "Find the login button"
+                • "Click on settings"
+                • "Analyze screen with Qwen2-VL"
+                • "Show touch grid"
+                
+                What would you like to explore?
+                """,
                 isUser: false,
                 messageType: .text,
                 attachments: []
@@ -340,19 +617,27 @@ class EnhancedLLMManager: ObservableObject {
         } else if lowercased.contains("help") {
             return EnhancedChatMessage(
                 content: """
-                I'm Eiros, your enhanced AI assistant! Here's what I can help you with:
+                I'm Eiros with Qwen2-VL-2B integration! Here's what I can help you with:
                 
                 🧠 **Text Conversations**: Answer questions and have discussions
-                👁️ **Visual Analysis**: Analyze images and screenshots
-                📱 **Screen Automation**: Capture and analyze your screen
-                📝 **Text Recognition**: Extract text from images
-                🎯 **UI Analysis**: Identify and describe interface elements
+                👁️ **Visual Analysis**: Analyze images and screenshots with Qwen2-VL
+                📱 **UI Automation**: Advanced mobile interface automation
+                📝 **Text Recognition**: Multi-language OCR with high accuracy
+                🎯 **Element Detection**: Precise UI element identification
+                🔲 **Touch Grid**: Visual grid system for touch targeting
                 
-                Try asking me to:
-                • "Analyze this screenshot"
-                • "Extract text from screen"
-                • "Find buttons on screen"
-                • "What do you see in this image?"
+                **Qwen2-VL Commands**:
+                • "Find [element name]" - Locate UI elements
+                • "Click [element]" - Simulate touch interactions
+                • "Analyze screen with Qwen2-VL" - Comprehensive screen analysis
+                • "Extract text from screen" - OCR text extraction
+                • "Show/hide touch grid" - Toggle grid overlay
+                
+                **Model Info**:
+                • Qwen2-VL-2B (2 billion parameters)
+                • Specialized for mobile UI automation
+                • 90.8% accuracy on Android Control tasks
+                • Supports arbitrary image resolutions
                 
                 What would you like to try?
                 """,
@@ -360,23 +645,36 @@ class EnhancedLLMManager: ObservableObject {
                 messageType: .text,
                 attachments: []
             )
-        } else if lowercased.contains("model") || lowercased.contains("capability") {
+        } else if lowercased.contains("model") || lowercased.contains("capability") || lowercased.contains("qwen") {
+            let qwenInfo = qwen2VLManager.modelInfo
             return EnhancedChatMessage(
                 content: """
-                Current Model: \(currentModel.displayName)
+                **Current Models**:
                 
-                **Capabilities:**
+                🔹 **Primary LLM**: \(currentModel.displayName)
                 \(currentModel.capabilities.map { "• \($0)" }.joined(separator: "\n"))
                 
-                **Supported Modalities:**
-                \(supportedModalities.map { "• \($0.rawValue.capitalized)" }.joined(separator: "\n"))
+                🔹 **Vision Model**: \(qwenInfo.name) (\(qwenInfo.version))
+                • Parameters: \(qwenInfo.parameters)
+                • Status: \(qwen2VLManager.isModelLoaded ? "✅ Loaded" : "⏳ Loading")
                 
-                **Performance:**
-                • Memory Usage: \(memoryUsage)
-                • Last Response Time: \(lastInferenceTime)
-                • Average Response Time: \(averageResponseTime)
+                **Qwen2-VL Capabilities**:
+                \(qwenInfo.capabilities.map { "• \($0)" }.joined(separator: "\n"))
                 
-                I'm running entirely on your device for privacy and speed!
+                **Benchmark Performance**:
+                \(qwenInfo.benchmarkScores.map { "• \($0.key): \($0.value)%" }.joined(separator: "\n"))
+                
+                **Performance Metrics**:
+                • Memory Usage: \(qwen2VLManager.memoryUsage)
+                • Last Inference: \(String(format: "%.2fs", qwen2VLManager.lastInferenceTime))
+                • Average Time: \(String(format: "%.2fs", qwen2VLManager.averageInferenceTime))
+                
+                **Supported Features**:
+                • Resolution: \(qwenInfo.supportedResolutions)
+                • Video Length: \(qwenInfo.maxVideoLength)
+                • Languages: Multi-language OCR support
+                
+                Both models run entirely on your device for privacy and speed!
                 """,
                 isUser: false,
                 messageType: .text,
@@ -384,7 +682,17 @@ class EnhancedLLMManager: ObservableObject {
             )
         } else {
             return EnhancedChatMessage(
-                content: "I understand your question about '\(prompt)'. As an enhanced AI assistant with visual capabilities, I'm processing this locally on your device. I can also analyze images and screenshots if you'd like to share any visual content. How else can I help you?",
+                content: """
+                I understand your question about '\(prompt)'. As an enhanced AI assistant with Qwen2-VL-2B integration, I can help with both text conversations and advanced UI automation tasks.
+                
+                💡 **Suggestions**:
+                • Ask me to analyze the current screen
+                • Request UI element detection
+                • Try natural language automation commands
+                • Upload images for visual analysis
+                
+                How else can I help you with UI automation or visual analysis?
+                """,
                 isUser: false,
                 messageType: .text,
                 attachments: []
