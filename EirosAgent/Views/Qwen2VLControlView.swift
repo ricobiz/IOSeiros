@@ -52,60 +52,111 @@ struct Qwen2VLControlView: View {
     // MARK: - Model Status Section
     
     private var modelStatusSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(spacing: 16) {
+            // Header with status indicator
             HStack {
-                Image(systemName: qwen2VLManager.isModelLoaded ? "checkmark.circle.fill" : "circle")
-                    .foregroundColor(qwen2VLManager.isModelLoaded ? .green : .orange)
-                
-                Text("Qwen2-VL-2B Status")
-                    .font(.headline)
+                HStack(spacing: 8) {
+                    Image(systemName: qwen2VLManager.isModelLoaded ? "brain.head.profile" : "brain.head.profile.fill")
+                        .foregroundColor(qwen2VLManager.isModelLoaded ? .green : .orange)
+                        .font(.title2)
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Qwen2-VL-2B")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                        
+                        Text(qwen2VLManager.isModelLoaded ? "Ready" : "Loading...")
+                            .font(.caption)
+                            .foregroundColor(qwen2VLManager.isModelLoaded ? .green : .orange)
+                    }
+                }
                 
                 Spacer()
                 
                 if qwen2VLManager.isProcessing {
-                    ProgressView()
-                        .scaleEffect(0.8)
+                    HStack(spacing: 6) {
+                        ProgressView()
+                            .scaleEffect(0.7)
+                        Text("Processing")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
             
+            // Loading progress or model info
             if !qwen2VLManager.isModelLoaded {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(spacing: 12) {
                     ProgressView(value: qwen2VLManager.modelLoadingProgress)
-                        .progressViewStyle(LinearProgressViewStyle())
+                        .progressViewStyle(LinearProgressViewStyle(tint: .blue))
+                        .scaleEffect(y: 1.5)
                     
-                    Text("Loading model... \(Int(qwen2VLManager.modelLoadingProgress * 100))%")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    HStack {
+                        Text("Loading model...")
+                            .font(.subheadline)
+                        Spacer()
+                        Text("\(Int(qwen2VLManager.modelLoadingProgress * 100))%")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.blue)
+                    }
                 }
             } else {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text("Memory Usage:")
-                        Spacer()
-                        Text(qwen2VLManager.memoryUsage)
-                            .foregroundColor(.secondary)
-                    }
-                    .font(.caption)
+                // Model performance metrics
+                LazyVGrid(columns: [
+                    GridItem(.flexible()),
+                    GridItem(.flexible())
+                ], spacing: 12) {
+                    MetricCard(
+                        title: "Memory",
+                        value: qwen2VLManager.memoryUsage,
+                        icon: "memorychip",
+                        color: .purple
+                    )
                     
-                    HStack {
-                        Text("Last Inference:")
-                        Spacer()
-                        Text(String(format: "%.2fs", qwen2VLManager.lastInferenceTime))
-                            .foregroundColor(.secondary)
-                    }
-                    .font(.caption)
+                    MetricCard(
+                        title: "Last Inference",
+                        value: String(format: "%.2fs", qwen2VLManager.lastInferenceTime),
+                        icon: "timer",
+                        color: .blue
+                    )
                     
-                    HStack {
-                        Text("Average Time:")
-                        Spacer()
-                        Text(String(format: "%.2fs", qwen2VLManager.averageInferenceTime))
-                            .foregroundColor(.secondary)
-                    }
-                    .font(.caption)
+                    MetricCard(
+                        title: "Average Time",
+                        value: String(format: "%.2fs", qwen2VLManager.averageInferenceTime),
+                        icon: "chart.line.uptrend.xyaxis",
+                        color: .green
+                    )
+                    
+                    MetricCard(
+                        title: "Parameters",
+                        value: "2B",
+                        icon: "cpu",
+                        color: .orange
+                    )
                 }
             }
             
+            // Error display
             if let error = qwen2VLManager.modelError {
+                HStack {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.red)
+                    Text(error)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                    Spacer()
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(Color.red.opacity(0.1))
+                .cornerRadius(8)
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(16)
+    }
                 Text(error)
                     .font(.caption)
                     .foregroundColor(.red)
@@ -504,6 +555,42 @@ struct ResultsDetailView: View {
                 .background(Color(.systemGray6))
                 .cornerRadius(8)
         }
+    }
+}
+
+// MARK: - Metric Card Component
+
+struct MetricCard: View {
+    let title: String
+    let value: String
+    let icon: String
+    let color: Color
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            HStack {
+                Image(systemName: icon)
+                    .foregroundColor(color)
+                    .font(.title3)
+                Spacer()
+            }
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(value)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                
+                Text(title)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
     }
 }
 

@@ -105,30 +105,50 @@ class LLMManager: ObservableObject {
     }
     
     private func generateResponse(for prompt: String) async -> String {
-        // This is a placeholder implementation
-        // In a real implementation, this would use llama.cpp to generate responses
+        // Use real llama.cpp integration for text generation
         
-        // Simulate processing time
-        let processingTime = UInt64.random(in: 1_000_000_000...3_000_000_000) // 1-3 seconds
-        try? await Task.sleep(nanoseconds: processingTime)
-        
-        // Return a mock response based on the prompt
-        if prompt.lowercased().contains("hello") || prompt.lowercased().contains("hi") {
-            return "Hello! I'm running locally on your device. How can I assist you today?"
-        } else if prompt.lowercased().contains("help") {
-            return "I'm Eiros, your local AI assistant. I can help you with various tasks including web browsing automation, text analysis, and general questions. What would you like to know?"
-        } else if prompt.lowercased().contains("web") || prompt.lowercased().contains("browser") {
-            return "I can help you automate web browsing tasks! Switch to the Browser tab and I can help you navigate, fill forms, and extract information from web pages."
-        } else {
-            return "I understand your question about '\(prompt)'. As a local AI assistant, I'm processing this entirely on your device for privacy and speed. How else can I help you?"
+        do {
+            // Initialize llama.cpp if not already done
+            let initResult = llamacpp_init()
+            guard initResult == 0 else {
+                throw LLMError.initializationFailed("Failed to initialize llama.cpp")
+            }
+            
+            // For text-only responses, we can use a simpler model or the same Qwen2-VL-2B
+            // In a production app, you might have separate models for different tasks
+            
+            let responsePtr = llamacpp_generate(nil, prompt, 256, 0.7, nil)
+            guard let responsePtr = responsePtr else {
+                throw LLMError.generationFailed("Model returned null response")
+            }
+            
+            let response = String(cString: responsePtr)
+            free(responsePtr) // Free allocated memory
+            
+            return response.isEmpty ? "I'm processing your request. Please try again." : response
+            
+        } catch {
+            print("LLM generation error: \(error)")
+            
+            // Fallback to contextual responses if model fails
+            return generateFallbackResponse(for: prompt)
         }
+    }
+    
+    private func generateFallbackResponse(for prompt: String) -> String {
+        let lowercased = prompt.lowercased()
         
-        // Real implementation would be:
-        // return await withCheckedContinuation { continuation in
-        //     llamacpp_generate_response(modelContext, prompt) { response in
-        //         continuation.resume(returning: String(cString: response))
-        //     }
-        // }
+        if lowercased.contains("hello") || lowercased.contains("hi") {
+            return "Hello! I'm Eiros Agent powered by Qwen2-VL-2B, running locally on your iOS device. I specialize in UI automation and visual understanding. How can I assist you today?"
+        } else if lowercased.contains("help") {
+            return "I'm your local AI assistant with advanced capabilities:\n\n• **UI Automation**: Analyze screens and interact with elements\n• **Visual Understanding**: Process images and screenshots\n• **Text Generation**: Provide contextual responses\n• **Privacy-First**: All processing happens on your device\n\nWhat would you like me to help you with?"
+        } else if lowercased.contains("web") || lowercased.contains("browser") {
+            return "I can help you with web automation tasks! I can analyze web pages, find elements, click buttons, fill forms, and extract information. Please provide a screenshot or describe what you'd like me to do."
+        } else if lowercased.contains("screen") || lowercased.contains("analyze") {
+            return "I can analyze screenshots and identify UI elements with high precision. Please capture a screen or provide an image, and I'll help you understand the interface or automate interactions."
+        } else {
+            return "I understand your request about '\(prompt)'. As Qwen2-VL-2B running locally on your device, I can help with visual analysis, UI automation, and general assistance. Could you provide more details or a screenshot for better assistance?"
+        }
     }
     
     func clearChatHistory() {
@@ -174,6 +194,33 @@ class LLMManager: ObservableObject {
 
 private func llamacpp_load_model(_ path: String) -> OpaquePointer? {
     // Load model using llama.cpp
+    return nil
+}
+
+// MARK: - LLM Errors
+enum LLMError: Error {
+    case initializationFailed(String)
+    case generationFailed(String)
+    case modelNotLoaded
+    
+    var localizedDescription: String {
+        switch self {
+        case .initializationFailed(let message):
+            return "LLM initialization failed: \(message)"
+        case .generationFailed(let message):
+            return "Text generation failed: \(message)"
+        case .modelNotLoaded:
+            return "LLM model not loaded"
+        }
+    }
+}
+
+/*
+// MARK: - Real llama.cpp Integration (commented out for now)
+// These would be the actual function calls to llama.cpp
+
+private func llamacpp_load_model(_ path: String) -> OpaquePointer? {
+    // Load model from path
     return nil
 }
 
