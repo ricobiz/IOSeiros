@@ -10,8 +10,10 @@ import WebKit
 
 struct BrowserView: View {
     @StateObject private var webViewManager = WebViewManager()
+    @StateObject private var automationController = AutomationController.shared
     @State private var urlText = "https://www.google.com"
     @State private var isLoading = false
+    @State private var showAutomationPanel = false
     
     var body: some View {
         NavigationView {
@@ -37,6 +39,13 @@ struct BrowserView: View {
                     
                     Spacer()
                     
+                    // Automation Panel Toggle
+                    Button(action: { showAutomationPanel.toggle() }) {
+                        Image(systemName: "gearshape.2")
+                            .font(.title2)
+                            .foregroundColor(showAutomationPanel ? .blue : .gray)
+                    }
+                    
                     // OCR Button
                     Button(action: captureAndOCR) {
                         Image(systemName: "text.viewfinder")
@@ -48,7 +57,7 @@ struct BrowserView: View {
                     Button(action: executeAIAction) {
                         Image(systemName: "brain")
                             .font(.title2)
-                            .foregroundColor(.blue)
+                            .foregroundColor(automationController.isAutomationActive ? .green : .blue)
                     }
                 }
                 .padding(.horizontal)
@@ -69,9 +78,18 @@ struct BrowserView: View {
                 .padding(.horizontal)
                 
                 // Progress Bar
-                if isLoading {
+                if isLoading || automationController.isProcessing {
                     ProgressView()
                         .progressViewStyle(LinearProgressViewStyle())
+                        .padding(.horizontal)
+                }
+                
+                // Automation Panel
+                if showAutomationPanel {
+                    AutomationPanelView()
+                        .frame(height: 200)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(10)
                         .padding(.horizontal)
                 }
                 
@@ -84,6 +102,10 @@ struct BrowserView: View {
                         if let url = url {
                             urlText = url.absoluteString
                         }
+                    }
+                    .onAppear {
+                        // Integrate WebView with AutomationController
+                        automationController.setWebViewManager(webViewManager)
                     }
             }
             .navigationTitle("Browser")
@@ -106,9 +128,22 @@ struct BrowserView: View {
     }
     
     private func executeAIAction() {
-        // This will trigger AI-powered web actions
+        // Create a simple automation task
+        let task = AutomationTask(
+            name: "AI Web Analysis",
+            description: "Analyze current webpage and suggest actions",
+            steps: [
+                AutomationStep(
+                    description: "Take screenshot and analyze",
+                    action: .screenshot
+                )
+            ],
+            priority: .medium,
+            estimatedDuration: 5.0
+        )
+        
         Task {
-            await webViewManager.executeAgentScript()
+            await automationController.executeTask(task)
         }
     }
 }

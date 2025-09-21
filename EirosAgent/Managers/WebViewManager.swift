@@ -71,9 +71,23 @@ class WebViewManager: NSObject, ObservableObject {
             let recognizedText = try await recognizeText(in: image)
             ocrResults = recognizedText
             
-            // Send OCR results to LLM for analysis
+            // Integrate with VisionManager for comprehensive analysis
+            let analysisResult = await VisionManager.shared.analyzeScreen(image)
+            
+            // Send OCR results to Enhanced LLM for analysis
             let ocrText = recognizedText.joined(separator: "\n")
-            await LLMManager.shared.sendMessage("I captured text from the current webpage: \(ocrText). What should I do with this information?")
+            let contextMessage = """
+            I captured text from the current webpage: \(ocrText)
+            
+            Vision analysis found:
+            - \(analysisResult.detectedText.count) text elements
+            - \(analysisResult.detectedObjects.count) objects
+            - \(analysisResult.uiElements.count) UI elements
+            
+            What actions can I perform on this page?
+            """
+            
+            await EnhancedLLMManager.shared.sendMessage(contextMessage)
         } catch {
             print("OCR failed: \(error)")
         }
@@ -133,6 +147,24 @@ class WebViewManager: NSObject, ObservableObject {
         
         do {
             _ = try await webView.evaluateJavaScript(script)
+            
+            // Also trigger comprehensive analysis with AutomationController
+            if let screenshot = try? await captureScreenshot() {
+                let task = AutomationTask(
+                    name: "Agent Analysis",
+                    description: "Comprehensive page analysis with AI",
+                    steps: [
+                        AutomationStep(
+                            description: "Analyze page with all available AI models",
+                            action: .screenshot
+                        )
+                    ],
+                    priority: .medium,
+                    estimatedDuration: 3.0
+                )
+                
+                await AutomationController.shared.executeTask(task)
+            }
         } catch {
             print("Agent script execution failed: \(error)")
         }
@@ -149,6 +181,36 @@ class WebViewManager: NSObject, ObservableObject {
             _ = try await webView.evaluateJavaScript(script)
         } catch {
             print("Click element failed: \(error)")
+        }
+    }
+    
+    func clickAtCoordinates(_ point: CGPoint) async {
+        let script = """
+        (function() {
+            const element = document.elementFromPoint(\(point.x), \(point.y));
+            if (element) {
+                element.click();
+                return {
+                    success: true,
+                    element: element.tagName,
+                    text: element.textContent || element.value || ''
+                };
+            }
+            return { success: false };
+        })();
+        """
+        
+        do {
+            let result = try await webView.evaluateJavaScript(script)
+            print("Click at coordinates result: \(result)")
+            
+            // Also register the touch with TouchGridSystem
+            let touchSuccess = await TouchGridSystem.shared.executeTouchAt(point, type: .tap)
+            if touchSuccess {
+                print("Touch registered with TouchGridSystem at \(point)")
+            }
+        } catch {
+            print("Click at coordinates failed: \(error)")
         }
     }
     

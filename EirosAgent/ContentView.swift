@@ -33,12 +33,19 @@ struct ContentView: View {
                 }
                 .tag(2)
             
+            AutomationMonitorView()
+                .tabItem {
+                    Image(systemName: "gearshape.2.fill")
+                    Text("Automation")
+                }
+                .tag(3)
+            
             SettingsView()
                 .tabItem {
                     Image(systemName: "gear")
                     Text("Settings")
                 }
-                .tag(3)
+                .tag(4)
         }
     }
 }
