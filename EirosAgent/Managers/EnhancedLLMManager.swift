@@ -1,4 +1,3 @@
-
 //
 //  EnhancedLLMManager.swift
 //  EirosAgent
@@ -8,130 +7,191 @@
 
 import Foundation
 import Combine
-import UIKit
 
 @MainActor
 class EnhancedLLMManager: ObservableObject {
     static let shared = EnhancedLLMManager()
     
+    // MARK: - Published Properties
     @Published var isModelLoaded = false
-    @Published var chatHistory: [EnhancedChatMessage] = []
+    @Published var chatHistory: [ChatMessage] = []
     @Published var isGenerating = false
-    @Published var currentModel: LLMModel = .llama2_7b
-    @Published var supportedModalities: Set<Modality> = [.text, .vision]
+    @Published var currentMode: LLMMode = .local
+    @Published var availableModes: [LLMMode] = LLMMode.allCases
     
     // Performance metrics
     @Published var lastInferenceTime = "N/A"
     @Published var averageResponseTime = "N/A"
-    @Published var memoryUsage = "N/A"
-    
-    // Vision integration
-    private let visionManager = VisionManager.shared
-    private let screenCaptureManager = ScreenCaptureManager.shared
+    @Published var modelSwitchingEnabled = true
     
     // Model information
-    var modelInfo: EnhancedModelInfo? {
-        guard isModelLoaded else { return nil }
-        return EnhancedModelInfo(
-            name: currentModel.displayName,
-            size: currentModel.size,
-            memoryUsage: memoryUsage,
-            parameters: currentModel.parameters,
-            supportedModalities: supportedModalities,
-            capabilities: currentModel.capabilities
-        )
+    var modelInfo: ModelInfo? {
+        switch currentMode {
+        case .local:
+            return localLLMManager.modelInfo
+        case .cloud:
+            return openRouterManager.getModelInfo()
+        case .hybrid:
+            return ModelInfo(
+                name: "Hybrid Mode",
+                size: "Local + Cloud",
+                memoryUsage: "Variable",
+                parameters: "Mixed"
+            )
+        }
     }
     
-    private var modelContext: OpaquePointer?
+    // MARK: - Private Properties
+    private let localLLMManager = LLMManager.shared
+    private let openRouterManager = OpenRouterManager.shared
     private var responseTimes: [Double] = []
+    private var cancellables = Set<AnyCancellable>()
+    
+    // Hybrid mode configuration
+    private let hybridThreshold = 100 // Switch to cloud for prompts longer than this
+    private let complexityKeywords = ["analyze", "complex", "detailed", "comprehensive", "vision", "image"]
     
     private init() {
-        setupInitialMessage()
+        setupBindings()
+        initializeWithWelcomeMessage()
     }
     
-    private func setupInitialMessage() {
-        let welcomeMessage = EnhancedChatMessage(
-            content: "Hello! I'm Eiros, your enhanced AI assistant with visual capabilities. I can analyze screenshots, recognize text, detect objects, and help you automate tasks. How can I assist you today?",
-            isUser: false,
-            messageType: .text,
-            attachments: []
-        )
-        chatHistory.append(welcomeMessage)
-    }
+    // MARK: - Setup
     
-    // MARK: - Model Management
-    
-    func loadModel(_ model: LLMModel = .llama2_7b) {
-        Task {
-            isGenerating = true
-            currentModel = model
-            
-            // Simulate model loading with different times based on model size
-            let loadingTime = model.loadingTime
-            try? await Task.sleep(nanoseconds: UInt64(loadingTime * 1_000_000_000))
-            
-            // In a real implementation, this would load the actual model
-            // modelContext = llamacpp_load_model(getModelPath(for: model))
-            
-            isModelLoaded = true
-            isGenerating = false
-            
-            updateMemoryUsage()
-        }
-    }
-    
-    func switchModel(to model: LLMModel) {
-        Task {
-            isModelLoaded = false
-            isGenerating = true
-            
-            // Cleanup existing model
-            if let context = modelContext {
-                // llamacpp_free_model(context)
-                modelContext = nil
+    private func setupBindings() {
+        // Bind local LLM manager properties
+        localLLMManager.$isModelLoaded
+            .sink { [weak self] isLoaded in
+                self?.updateModelLoadedStatus()
             }
-            
-            await loadModel(model)
-            
-            let switchMessage = EnhancedChatMessage(
-                content: "Switched to \(model.displayName). Ready to assist with \(model.capabilities.joined(separator: ", ")).",
-                isUser: false,
-                messageType: .system,
-                attachments: []
-            )
-            chatHistory.append(switchMessage)
+            .store(in: &cancellables)
+        
+        localLLMManager.$isGenerating
+            .sink { [weak self] isGenerating in
+                if self?.currentMode == .local {
+                    self?.isGenerating = isGenerating
+                }
+            }
+            .store(in: &cancellables)
+        
+        // Bind OpenRouter manager properties
+        openRouterManager.$isGenerating
+            .sink { [weak self] isGenerating in
+                if self?.currentMode == .cloud {
+                    self?.isGenerating = isGenerating
+                }
+            }
+            .store(in: &cancellables)
+        
+        openRouterManager.$isConfigured
+            .sink { [weak self] _ in
+                self?.updateAvailableModes()
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func initializeWithWelcomeMessage() {
+        let welcomeMessage = """
+        Hello! I'm Eiros, your enhanced AI assistant with both local and cloud capabilities.
+        
+        🏠 Local Mode: Fast, private processing on your device
+        ☁️ Cloud Mode: Access to powerful models like GPT-4, Claude, and Gemini
+        🔄 Hybrid Mode: Intelligent switching based on task complexity
+        
+        Current mode: \(currentMode.displayName)
+        How can I help you today?
+        """
+        
+        chatHistory.append(ChatMessage(content: welcomeMessage, isUser: false))
+    }
+    
+    private func updateModelLoadedStatus() {
+        switch currentMode {
+        case .local:
+            isModelLoaded = localLLMManager.isModelLoaded
+        case .cloud:
+            isModelLoaded = openRouterManager.isConfigured
+        case .hybrid:
+            isModelLoaded = localLLMManager.isModelLoaded || openRouterManager.isConfigured
         }
     }
     
-    // MARK: - Enhanced Messaging
+    private func updateAvailableModes() {
+        var modes: [LLMMode] = [.local]
+        
+        if openRouterManager.isConfigured {
+            modes.append(.cloud)
+            modes.append(.hybrid)
+        }
+        
+        availableModes = modes
+        
+        // Switch to local if current mode is not available
+        if !modes.contains(currentMode) {
+            currentMode = .local
+        }
+    }
     
-    func sendMessage(_ message: String, attachments: [MessageAttachment] = []) async {
-        let userMessage = EnhancedChatMessage(
-            content: message,
-            isUser: true,
-            messageType: determineMessageType(content: message, attachments: attachments),
-            attachments: attachments
-        )
-        chatHistory.append(userMessage)
+    // MARK: - Mode Management
+    
+    func switchMode(to mode: LLMMode) {
+        guard availableModes.contains(mode) else {
+            addSystemMessage("Mode \(mode.displayName) is not available. Please configure OpenRouter API key for cloud features.")
+            return
+        }
+        
+        currentMode = mode
+        updateModelLoadedStatus()
+        
+        let modeMessage = "Switched to \(mode.displayName). \(mode.description)"
+        addSystemMessage(modeMessage)
+    }
+    
+    func loadModel() {
+        switch currentMode {
+        case .local, .hybrid:
+            localLLMManager.loadModel()
+        case .cloud:
+            // Cloud models don't need loading
+            isModelLoaded = openRouterManager.isConfigured
+        }
+    }
+    
+    func reloadModel() {
+        switch currentMode {
+        case .local, .hybrid:
+            localLLMManager.reloadModel()
+        case .cloud:
+            // Refresh cloud configuration
+            isModelLoaded = openRouterManager.isConfigured
+        }
+    }
+    
+    // MARK: - Message Handling
+    
+    func sendMessage(_ message: String) async {
+        // Add user message
+        chatHistory.append(ChatMessage(content: message, isUser: true))
         
         guard isModelLoaded else {
-            let errorMessage = EnhancedChatMessage(
-                content: "Model is not loaded. Please wait for initialization to complete.",
-                isUser: false,
-                messageType: .error,
-                attachments: []
-            )
-            chatHistory.append(errorMessage)
+            let errorMessage = currentMode == .cloud ? 
+                "OpenRouter API is not configured. Please add your API key in settings." :
+                "Model is not loaded. Please wait for initialization to complete."
+            addSystemMessage(errorMessage)
             return
         }
         
         isGenerating = true
         let startTime = CFAbsoluteTimeGetCurrent()
         
-        // Generate enhanced response based on message type and attachments
-        let response = await generateEnhancedResponse(for: message, attachments: attachments)
+        // Determine which engine to use
+        let selectedMode = currentMode == .hybrid ? determineOptimalMode(for: message) : currentMode
         
-        chatHistory.append(response)
+        // Generate response
+        let response = await generateResponse(for: message, using: selectedMode)
+        
+        // Add AI response
+        chatHistory.append(ChatMessage(content: response, isUser: false))
         
         // Update performance metrics
         let responseTime = CFAbsoluteTimeGetCurrent() - startTime
@@ -140,268 +200,94 @@ class EnhancedLLMManager: ObservableObject {
         isGenerating = false
     }
     
-    // MARK: - Vision-Enhanced Features
-    
-    func analyzeScreenshot() async {
-        guard let screenshot = await screenCaptureManager.captureScreen() else {
-            let errorMessage = EnhancedChatMessage(
-                content: "Failed to capture screenshot. Please try again.",
-                isUser: false,
-                messageType: .error,
-                attachments: []
-            )
-            chatHistory.append(errorMessage)
+    func sendMessageWithVision(_ message: String, image: UIImage) async {
+        // Add user message
+        chatHistory.append(ChatMessage(content: message, isUser: true))
+        
+        // Vision analysis requires cloud models
+        if !openRouterManager.isConfigured {
+            addSystemMessage("Vision analysis requires cloud models. Please configure OpenRouter API key.")
             return
         }
         
-        let attachment = MessageAttachment(type: .image, data: screenshot.pngData() ?? Data(), metadata: ["source": "screenshot"])
+        isGenerating = true
+        let startTime = CFAbsoluteTimeGetCurrent()
         
-        await sendMessage("Analyze this screenshot", attachments: [attachment])
+        // Use OpenRouter for vision analysis
+        let response = await openRouterManager.analyzeScreenWithContext(image: image, context: message)
+        
+        // Add AI response
+        chatHistory.append(ChatMessage(content: response, isUser: false))
+        
+        // Update performance metrics
+        let responseTime = CFAbsoluteTimeGetCurrent() - startTime
+        updatePerformanceMetrics(responseTime: responseTime)
+        
+        isGenerating = false
     }
     
-    func analyzeImage(_ image: UIImage, prompt: String = "Analyze this image") async {
-        let attachment = MessageAttachment(type: .image, data: image.pngData() ?? Data(), metadata: ["source": "user_provided"])
-        await sendMessage(prompt, attachments: [attachment])
-    }
-    
-    func extractTextFromScreen() async {
-        guard let screenshot = await screenCaptureManager.captureScreen() else {
-            let errorMessage = EnhancedChatMessage(
-                content: "Failed to capture screenshot for text extraction.",
-                isUser: false,
-                messageType: .error,
-                attachments: []
-            )
-            chatHistory.append(errorMessage)
-            return
-        }
-        
-        let detectedTexts = await visionManager.recognizeText(in: screenshot)
-        
-        if detectedTexts.isEmpty {
-            let message = EnhancedChatMessage(
-                content: "No text detected in the current screen.",
-                isUser: false,
-                messageType: .text,
-                attachments: []
-            )
-            chatHistory.append(message)
-        } else {
-            let extractedText = detectedTexts.map { $0.text }.joined(separator: "\n")
-            let message = EnhancedChatMessage(
-                content: "Extracted text from screen:\n\n\(extractedText)",
-                isUser: false,
-                messageType: .text,
-                attachments: []
-            )
-            chatHistory.append(message)
+    private func generateResponse(for message: String, using mode: LLMMode) async -> String {
+        switch mode {
+        case .local:
+            return await generateLocalResponse(for: message)
+        case .cloud:
+            return await generateCloudResponse(for: message)
+        case .hybrid:
+            // This shouldn't happen as hybrid mode determines the actual mode
+            return await generateLocalResponse(for: message)
         }
     }
     
-    func findUIElements(matching description: String) async {
-        guard let screenshot = await screenCaptureManager.captureScreen() else {
-            let errorMessage = EnhancedChatMessage(
-                content: "Failed to capture screenshot for UI analysis.",
-                isUser: false,
-                messageType: .error,
-                attachments: []
-            )
-            chatHistory.append(errorMessage)
-            return
-        }
-        
-        let analysisResult = await visionManager.analyzeScreen(screenshot)
-        let matchingElements = analysisResult.uiElements.filter { element in
-            element.text.lowercased().contains(description.lowercased()) ||
-            element.type.rawValue.lowercased().contains(description.lowercased())
-        }
-        
-        if matchingElements.isEmpty {
-            let message = EnhancedChatMessage(
-                content: "No UI elements found matching '\(description)' in the current screen.",
-                isUser: false,
-                messageType: .text,
-                attachments: []
-            )
-            chatHistory.append(message)
-        } else {
-            let elementDescriptions = matchingElements.map { element in
-                "- \(element.type.rawValue.capitalized): '\(element.text)' (confidence: \(String(format: "%.1f", element.confidence * 100))%)"
-            }.joined(separator: "\n")
-            
-            let message = EnhancedChatMessage(
-                content: "Found \(matchingElements.count) UI elements matching '\(description)':\n\n\(elementDescriptions)",
-                isUser: false,
-                messageType: .text,
-                attachments: []
-            )
-            chatHistory.append(message)
-        }
-    }
-    
-    // MARK: - Response Generation
-    
-    private func generateEnhancedResponse(for prompt: String, attachments: [MessageAttachment]) async -> EnhancedChatMessage {
-        // Handle different types of requests
-        if !attachments.isEmpty {
-            return await generateVisionResponse(for: prompt, attachments: attachments)
-        } else if prompt.lowercased().contains("screenshot") || prompt.lowercased().contains("screen") {
-            return await generateScreenAnalysisResponse(for: prompt)
-        } else {
-            return await generateTextResponse(for: prompt)
-        }
-    }
-    
-    private func generateVisionResponse(for prompt: String, attachments: [MessageAttachment]) async -> EnhancedChatMessage {
-        // Process image attachments
-        for attachment in attachments where attachment.type == .image {
-            if let image = UIImage(data: attachment.data) {
-                let analysisResult = await visionManager.analyzeScreen(image)
-                
-                let response = """
-                I've analyzed the image and found:
-                
-                📝 Text Elements: \(analysisResult.detectedText.count)
-                \(analysisResult.detectedText.prefix(5).map { "• \($0.text) (confidence: \(String(format: "%.1f", $0.confidence * 100))%)" }.joined(separator: "\n"))
-                
-                🔍 Objects: \(analysisResult.detectedObjects.count)
-                \(analysisResult.detectedObjects.prefix(3).map { "• \($0.label)" }.joined(separator: "\n"))
-                
-                🎯 UI Elements: \(analysisResult.uiElements.count)
-                \(analysisResult.uiElements.filter { $0.isInteractable }.prefix(3).map { "• \($0.type.rawValue.capitalized): \($0.text)" }.joined(separator: "\n"))
-                
-                \(analysisResult.screenDescription)
-                
-                Processing time: \(String(format: "%.2f", analysisResult.processingTime))s
-                """
-                
-                return EnhancedChatMessage(
-                    content: response,
-                    isUser: false,
-                    messageType: .vision,
-                    attachments: []
-                )
+    private func generateLocalResponse(for message: String) async -> String {
+        // Use existing local LLM logic
+        return await withCheckedContinuation { continuation in
+            Task {
+                await localLLMManager.sendMessage(message)
+                // Get the last response from local manager
+                if let lastMessage = localLLMManager.chatHistory.last, !lastMessage.isUser {
+                    continuation.resume(returning: lastMessage.content)
+                } else {
+                    continuation.resume(returning: "Local model response not available")
+                }
             }
         }
-        
-        return EnhancedChatMessage(
-            content: "I couldn't process the attached image. Please try again.",
-            isUser: false,
-            messageType: .error,
-            attachments: []
-        )
     }
     
-    private func generateScreenAnalysisResponse(for prompt: String) async -> EnhancedChatMessage {
-        // Simulate processing time
-        let processingTime = UInt64.random(in: 1_000_000_000...2_000_000_000)
-        try? await Task.sleep(nanoseconds: processingTime)
-        
-        let response = """
-        I can help you analyze the current screen! Here's what I can do:
-        
-        📸 **Screenshot Analysis**: Capture and analyze the current screen
-        📝 **Text Extraction**: Find and extract all readable text
-        🎯 **UI Element Detection**: Identify buttons, fields, and interactive elements
-        🔍 **Object Recognition**: Detect shapes and visual elements
-        
-        Would you like me to:
-        1. Take a screenshot and analyze it
-        2. Extract text from the current screen
-        3. Find specific UI elements
-        4. Detect objects in the current view
-        
-        Just let me know what you'd like to explore!
-        """
-        
-        return EnhancedChatMessage(
-            content: response,
-            isUser: false,
-            messageType: .text,
-            attachments: []
-        )
+    private func generateCloudResponse(for message: String) async -> String {
+        // Convert chat history to OpenRouter format
+        let recentHistory = Array(chatHistory.suffix(10)) // Last 10 messages for context
+        return await openRouterManager.generateResponse(for: recentHistory)
     }
     
-    private func generateTextResponse(for prompt: String) async -> EnhancedChatMessage {
-        // Simulate processing time based on model
-        let processingTime = UInt64.random(in: 1_000_000_000...3_000_000_000)
-        try? await Task.sleep(nanoseconds: processingTime)
+    // MARK: - Hybrid Mode Intelligence
+    
+    private func determineOptimalMode(for message: String) -> LLMMode {
+        let messageLength = message.count
+        let lowercaseMessage = message.lowercased()
         
-        // Enhanced responses based on prompt content
-        let lowercased = prompt.lowercased()
-        
-        if lowercased.contains("hello") || lowercased.contains("hi") {
-            return EnhancedChatMessage(
-                content: "Hello! I'm your enhanced AI assistant with visual capabilities. I can analyze images, capture screenshots, extract text, and help automate tasks. What would you like to explore?",
-                isUser: false,
-                messageType: .text,
-                attachments: []
-            )
-        } else if lowercased.contains("help") {
-            return EnhancedChatMessage(
-                content: """
-                I'm Eiros, your enhanced AI assistant! Here's what I can help you with:
-                
-                🧠 **Text Conversations**: Answer questions and have discussions
-                👁️ **Visual Analysis**: Analyze images and screenshots
-                📱 **Screen Automation**: Capture and analyze your screen
-                📝 **Text Recognition**: Extract text from images
-                🎯 **UI Analysis**: Identify and describe interface elements
-                
-                Try asking me to:
-                • "Analyze this screenshot"
-                • "Extract text from screen"
-                • "Find buttons on screen"
-                • "What do you see in this image?"
-                
-                What would you like to try?
-                """,
-                isUser: false,
-                messageType: .text,
-                attachments: []
-            )
-        } else if lowercased.contains("model") || lowercased.contains("capability") {
-            return EnhancedChatMessage(
-                content: """
-                Current Model: \(currentModel.displayName)
-                
-                **Capabilities:**
-                \(currentModel.capabilities.map { "• \($0)" }.joined(separator: "\n"))
-                
-                **Supported Modalities:**
-                \(supportedModalities.map { "• \($0.rawValue.capitalized)" }.joined(separator: "\n"))
-                
-                **Performance:**
-                • Memory Usage: \(memoryUsage)
-                • Last Response Time: \(lastInferenceTime)
-                • Average Response Time: \(averageResponseTime)
-                
-                I'm running entirely on your device for privacy and speed!
-                """,
-                isUser: false,
-                messageType: .text,
-                attachments: []
-            )
-        } else {
-            return EnhancedChatMessage(
-                content: "I understand your question about '\(prompt)'. As an enhanced AI assistant with visual capabilities, I'm processing this locally on your device. I can also analyze images and screenshots if you'd like to share any visual content. How else can I help you?",
-                isUser: false,
-                messageType: .text,
-                attachments: []
-            )
+        // Use cloud for long or complex queries
+        if messageLength > hybridThreshold {
+            return .cloud
         }
+        
+        // Use cloud for complex analysis tasks
+        if complexityKeywords.contains(where: { lowercaseMessage.contains($0) }) {
+            return .cloud
+        }
+        
+        // Use cloud if local model is not loaded but cloud is available
+        if !localLLMManager.isModelLoaded && openRouterManager.isConfigured {
+            return .cloud
+        }
+        
+        // Default to local for simple queries
+        return .local
     }
     
     // MARK: - Utility Methods
     
-    private func determineMessageType(content: String, attachments: [MessageAttachment]) -> MessageType {
-        if !attachments.isEmpty && attachments.contains(where: { $0.type == .image }) {
-            return .vision
-        } else if content.lowercased().contains("screenshot") || content.lowercased().contains("analyze") {
-            return .vision
-        } else {
-            return .text
-        }
+    private func addSystemMessage(_ message: String) {
+        chatHistory.append(ChatMessage(content: message, isUser: false))
     }
     
     private func updatePerformanceMetrics(responseTime: Double) {
@@ -416,137 +302,178 @@ class EnhancedLLMManager: ObservableObject {
         averageResponseTime = String(format: "%.2f s", avgTime)
     }
     
-    private func updateMemoryUsage() {
-        let info = mach_task_basic_info()
-        var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size)/4
-        
-        let kerr: kern_return_t = withUnsafeMutablePointer(to: &info) {
-            $0.withMemoryRebound(to: integer_t.self, capacity: 1) {
-                task_info(mach_task_self_,
-                         task_flavor_t(MACH_TASK_BASIC_INFO),
-                         $0,
-                         &count)
-            }
-        }
-        
-        if kerr == KERN_SUCCESS {
-            let memoryMB = Int(info.resident_size / 1024 / 1024)
-            memoryUsage = "\(memoryMB) MB"
-        } else {
-            memoryUsage = "Unknown"
-        }
-    }
-    
     func clearChatHistory() {
         chatHistory.removeAll()
-        setupInitialMessage()
+        initializeWithWelcomeMessage()
     }
-}
-
-// MARK: - Enhanced Data Models
-
-struct EnhancedChatMessage: Identifiable, Codable {
-    let id = UUID()
-    let content: String
-    let isUser: Bool
-    let messageType: MessageType
-    let attachments: [MessageAttachment]
-    let timestamp: Date
     
-    init(content: String, isUser: Bool, messageType: MessageType, attachments: [MessageAttachment]) {
-        self.content = content
-        self.isUser = isUser
-        self.messageType = messageType
-        self.attachments = attachments
-        self.timestamp = Date()
-    }
-}
-
-enum MessageType: String, Codable, CaseIterable {
-    case text = "text"
-    case vision = "vision"
-    case system = "system"
-    case error = "error"
-}
-
-struct MessageAttachment: Identifiable, Codable {
-    let id = UUID()
-    let type: AttachmentType
-    let data: Data
-    let metadata: [String: String]
+    // MARK: - Model Selection for Cloud Mode
     
-    init(type: AttachmentType, data: Data, metadata: [String: String] = [:]) {
-        self.type = type
-        self.data = data
-        self.metadata = metadata
+    func selectCloudModel(_ model: OpenRouterModel) {
+        openRouterManager.selectModel(model)
+        if currentMode == .cloud {
+            addSystemMessage("Switched to \(model.displayName) (\(model.provider))")
+        }
+    }
+    
+    func getAvailableCloudModels() -> [OpenRouterModel] {
+        return openRouterManager.availableModels
+    }
+    
+    func getCurrentCloudModel() -> OpenRouterModel {
+        return openRouterManager.selectedModel
+    }
+    
+    // MARK: - Configuration
+    
+    func configureOpenRouter(apiKey: String) {
+        openRouterManager.configure(with: apiKey)
+        updateAvailableModes()
+        addSystemMessage("OpenRouter API configured successfully! Cloud and Hybrid modes are now available.")
+    }
+    
+    func isOpenRouterConfigured() -> Bool {
+        return openRouterManager.isConfigured
+    }
+    
+    // MARK: - Usage Statistics
+    
+    func getUsageStatistics() -> LLMUsageStatistics {
+        return LLMUsageStatistics(
+            localInferences: responseTimes.count,
+            cloudTokensUsed: openRouterManager.totalTokensUsed,
+            cloudCost: openRouterManager.totalCost,
+            cloudRequests: openRouterManager.requestCount,
+            averageLocalResponseTime: averageResponseTime,
+            averageCloudResponseTime: String(format: "%.2f s", openRouterManager.averageResponseTime),
+            currentMode: currentMode
+        )
+    }
+    
+    func resetUsageStatistics() {
+        responseTimes.removeAll()
+        lastInferenceTime = "N/A"
+        averageResponseTime = "N/A"
+        openRouterManager.resetUsageMetrics()
     }
 }
 
-enum AttachmentType: String, Codable, CaseIterable {
-    case image = "image"
-    case document = "document"
-    case audio = "audio"
-}
+// MARK: - Supporting Types
 
-enum Modality: String, Codable, CaseIterable {
-    case text = "text"
-    case vision = "vision"
-    case audio = "audio"
-}
-
-enum LLMModel: String, Codable, CaseIterable {
-    case llama2_7b = "llama2_7b"
-    case llama2_13b = "llama2_13b"
-    case codellama_7b = "codellama_7b"
-    case mistral_7b = "mistral_7b"
+enum LLMMode: String, CaseIterable, Identifiable {
+    case local = "local"
+    case cloud = "cloud"
+    case hybrid = "hybrid"
+    
+    var id: String { rawValue }
     
     var displayName: String {
         switch self {
-        case .llama2_7b: return "Llama 2 7B"
-        case .llama2_13b: return "Llama 2 13B"
-        case .codellama_7b: return "Code Llama 7B"
-        case .mistral_7b: return "Mistral 7B"
+        case .local: return "Local"
+        case .cloud: return "Cloud"
+        case .hybrid: return "Hybrid"
         }
     }
     
-    var size: String {
+    var description: String {
         switch self {
-        case .llama2_7b: return "~4.2 GB"
-        case .llama2_13b: return "~8.1 GB"
-        case .codellama_7b: return "~4.1 GB"
-        case .mistral_7b: return "~4.0 GB"
+        case .local:
+            return "Fast, private processing on your device using local models."
+        case .cloud:
+            return "Access to powerful cloud models like GPT-4, Claude, and Gemini."
+        case .hybrid:
+            return "Intelligent switching between local and cloud based on task complexity."
         }
     }
     
-    var parameters: String {
+    var icon: String {
         switch self {
-        case .llama2_7b, .codellama_7b, .mistral_7b: return "7B"
-        case .llama2_13b: return "13B"
-        }
-    }
-    
-    var loadingTime: Double {
-        switch self {
-        case .llama2_7b, .codellama_7b, .mistral_7b: return 2.0
-        case .llama2_13b: return 4.0
-        }
-    }
-    
-    var capabilities: [String] {
-        switch self {
-        case .llama2_7b: return ["General conversation", "Text analysis", "Vision integration"]
-        case .llama2_13b: return ["Advanced reasoning", "Complex analysis", "Vision integration"]
-        case .codellama_7b: return ["Code generation", "Programming help", "Technical analysis"]
-        case .mistral_7b: return ["Fast responses", "Efficient processing", "General tasks"]
+        case .local: return "iphone"
+        case .cloud: return "cloud"
+        case .hybrid: return "arrow.triangle.2.circlepath"
         }
     }
 }
 
-struct EnhancedModelInfo {
-    let name: String
-    let size: String
-    let memoryUsage: String
-    let parameters: String
-    let supportedModalities: Set<Modality>
-    let capabilities: [String]
+struct LLMUsageStatistics {
+    let localInferences: Int
+    let cloudTokensUsed: Int
+    let cloudCost: Double
+    let cloudRequests: Int
+    let averageLocalResponseTime: String
+    let averageCloudResponseTime: String
+    let currentMode: LLMMode
+    
+    var formattedCloudCost: String {
+        return String(format: "$%.4f", cloudCost)
+    }
+    
+    var totalRequests: Int {
+        return localInferences + cloudRequests
+    }
+}
+
+// MARK: - Extensions
+
+extension EnhancedLLMManager {
+    
+    // MARK: - Batch Processing
+    
+    func processBatchMessages(_ messages: [String]) async -> [String] {
+        var responses: [String] = []
+        
+        for message in messages {
+            let response = await generateResponse(for: message, using: currentMode)
+            responses.append(response)
+            
+            // Add small delay to avoid rate limiting
+            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+        }
+        
+        return responses
+    }
+    
+    // MARK: - Context Management
+    
+    func setSystemContext(_ context: String) {
+        let contextMessage = "System context updated: \(context)"
+        addSystemMessage(contextMessage)
+    }
+    
+    func getConversationSummary() -> String {
+        let messageCount = chatHistory.count
+        let userMessages = chatHistory.filter { $0.isUser }.count
+        let aiMessages = chatHistory.filter { !$0.isUser }.count
+        
+        return """
+        Conversation Summary:
+        • Total messages: \(messageCount)
+        • User messages: \(userMessages)
+        • AI responses: \(aiMessages)
+        • Current mode: \(currentMode.displayName)
+        • Model loaded: \(isModelLoaded ? "Yes" : "No")
+        """
+    }
+    
+    // MARK: - Export/Import
+    
+    func exportChatHistory() -> Data? {
+        do {
+            return try JSONEncoder().encode(chatHistory)
+        } catch {
+            print("Failed to export chat history: \(error)")
+            return nil
+        }
+    }
+    
+    func importChatHistory(from data: Data) -> Bool {
+        do {
+            let importedHistory = try JSONDecoder().decode([ChatMessage].self, from: data)
+            chatHistory = importedHistory
+            return true
+        } catch {
+            print("Failed to import chat history: \(error)")
+            return false
+        }
+    }
 }

@@ -8,12 +8,15 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @StateObject private var llmManager = LLMManager.shared
+    @StateObject private var enhancedLLMManager = EnhancedLLMManager.shared
+    @StateObject private var openRouterManager = OpenRouterManager.shared
     @AppStorage("selectedModel") private var selectedModel = "llama-2-7b-chat"
     @AppStorage("maxTokens") private var maxTokens = 512
     @AppStorage("temperature") private var temperature = 0.7
     @AppStorage("enableOCR") private var enableOCR = true
     @AppStorage("enableBrowserAutomation") private var enableBrowserAutomation = true
+    @State private var showingOpenRouterSettings = false
+    @State private var showingUsageStatistics = false
     
     private let availableModels = [
         "llama-2-7b-chat",
@@ -25,15 +28,72 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             Form {
-                // Model Configuration Section
-                Section("AI Model Configuration") {
+                // AI Mode Selection Section
+                Section("AI Processing Mode") {
+                    LLMModeSelectorView()
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                }
+                
+                // OpenRouter Cloud Settings
+                Section("Cloud AI Settings") {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text("OpenRouter API")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                            Text(openRouterManager.isConfigured ? "Configured" : "Not configured")
+                                .font(.caption)
+                                .foregroundColor(openRouterManager.isConfigured ? .green : .secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        Button("Configure") {
+                            showingOpenRouterSettings = true
+                        }
+                        .font(.caption)
+                        .foregroundColor(.blue)
+                    }
+                    
+                    if openRouterManager.isConfigured {
+                        HStack {
+                            Text("Selected Model")
+                            Spacer()
+                            Text(openRouterManager.selectedModel.displayName)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        HStack {
+                            Text("Total Usage")
+                            Spacer()
+                            Text("\(openRouterManager.requestCount) requests")
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        HStack {
+                            Text("Total Cost")
+                            Spacer()
+                            Text(String(format: "$%.4f", openRouterManager.totalCost))
+                                .foregroundColor(.green)
+                        }
+                        
+                        Button("View Usage Statistics") {
+                            showingUsageStatistics = true
+                        }
+                        .foregroundColor(.blue)
+                    }
+                }
+                
+                // Local Model Configuration Section
+                Section("Local Model Configuration") {
                     Picker("Model", selection: $selectedModel) {
                         ForEach(availableModels, id: \.self) { model in
                             Text(model.capitalized).tag(model)
                         }
                     }
                     .onChange(of: selectedModel) { _ in
-                        llmManager.reloadModel()
+                        enhancedLLMManager.reloadModel()
                     }
                     
                     HStack {
@@ -65,18 +125,36 @@ struct SettingsView: View {
                 // Model Status Section
                 Section("Model Status") {
                     HStack {
-                        Text("Status")
+                        Text("Current Mode")
                         Spacer()
                         HStack {
-                            Circle()
-                                .fill(llmManager.isModelLoaded ? Color.green : Color.red)
-                                .frame(width: 8, height: 8)
-                            Text(llmManager.isModelLoaded ? "Loaded" : "Not Loaded")
+                            Image(systemName: enhancedLLMManager.currentMode.icon)
+                                .foregroundColor(.blue)
+                            Text(enhancedLLMManager.currentMode.displayName)
                                 .foregroundColor(.secondary)
                         }
                     }
                     
-                    if let modelInfo = llmManager.modelInfo {
+                    HStack {
+                        Text("Status")
+                        Spacer()
+                        HStack {
+                            Circle()
+                                .fill(enhancedLLMManager.isModelLoaded ? Color.green : Color.red)
+                                .frame(width: 8, height: 8)
+                            Text(enhancedLLMManager.isModelLoaded ? "Ready" : "Not Ready")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    if let modelInfo = enhancedLLMManager.modelInfo {
+                        HStack {
+                            Text("Active Model")
+                            Spacer()
+                            Text(modelInfo.name)
+                                .foregroundColor(.secondary)
+                        }
+                        
                         HStack {
                             Text("Model Size")
                             Spacer()
@@ -90,28 +168,63 @@ struct SettingsView: View {
                             Text(modelInfo.memoryUsage)
                                 .foregroundColor(.secondary)
                         }
+                        
+                        HStack {
+                            Text("Parameters")
+                            Spacer()
+                            Text(modelInfo.parameters)
+                                .foregroundColor(.secondary)
+                        }
                     }
                     
                     Button("Reload Model") {
-                        llmManager.reloadModel()
+                        enhancedLLMManager.reloadModel()
                     }
                     .foregroundColor(.blue)
                 }
                 
                 // Performance Section
                 Section("Performance") {
+                    let stats = enhancedLLMManager.getUsageStatistics()
+                    
                     HStack {
-                        Text("Inference Speed")
+                        Text("Total Requests")
                         Spacer()
-                        Text(llmManager.lastInferenceTime)
+                        Text("\(stats.totalRequests)")
                             .foregroundColor(.secondary)
                     }
                     
                     HStack {
-                        Text("Average Response Time")
+                        Text("Local Inference Time")
                         Spacer()
-                        Text(llmManager.averageResponseTime)
+                        Text(stats.averageLocalResponseTime)
                             .foregroundColor(.secondary)
+                    }
+                    
+                    if openRouterManager.isConfigured {
+                        HStack {
+                            Text("Cloud Response Time")
+                            Spacer()
+                            Text(stats.averageCloudResponseTime)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        HStack {
+                            Text("Cloud Tokens Used")
+                            Spacer()
+                            Text("\(stats.cloudTokensUsed)")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    if enhancedLLMManager.isGenerating {
+                        HStack {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                            Text("Generating response...")
+                                .foregroundColor(.secondary)
+                            Spacer()
+                        }
                     }
                 }
                 
@@ -133,14 +246,22 @@ struct SettingsView: View {
                     
                     Link("GitHub Repository", destination: URL(string: "https://github.com/ricobiz/IOSeiros")!)
                         .foregroundColor(.blue)
+                    
+                    Link("OpenRouter Documentation", destination: URL(string: "https://openrouter.ai/docs")!)
+                        .foregroundColor(.blue)
                 }
                 
                 // Actions Section
                 Section("Actions") {
                     Button("Clear Chat History") {
-                        llmManager.clearChatHistory()
+                        enhancedLLMManager.clearChatHistory()
                     }
                     .foregroundColor(.red)
+                    
+                    Button("Reset Usage Statistics") {
+                        enhancedLLMManager.resetUsageStatistics()
+                    }
+                    .foregroundColor(.orange)
                     
                     Button("Reset to Defaults") {
                         resetToDefaults()
@@ -149,6 +270,12 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
+            .sheet(isPresented: $showingOpenRouterSettings) {
+                OpenRouterSettingsView()
+            }
+            .sheet(isPresented: $showingUsageStatistics) {
+                UsageStatisticsView()
+            }
         }
     }
     
@@ -158,7 +285,57 @@ struct SettingsView: View {
         temperature = 0.7
         enableOCR = true
         enableBrowserAutomation = true
-        llmManager.reloadModel()
+        enhancedLLMManager.reloadModel()
+    }
+}
+
+struct UsageStatisticsView: View {
+    @StateObject private var enhancedLLMManager = EnhancedLLMManager.shared
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                let stats = enhancedLLMManager.getUsageStatistics()
+                
+                Section("Overall Statistics") {
+                    DetailRow(title: "Current Mode", value: stats.currentMode.displayName)
+                    DetailRow(title: "Total Requests", value: "\(stats.totalRequests)")
+                    DetailRow(title: "Local Inferences", value: "\(stats.localInferences)")
+                    DetailRow(title: "Cloud Requests", value: "\(stats.cloudRequests)")
+                }
+                
+                Section("Performance") {
+                    DetailRow(title: "Avg Local Response", value: stats.averageLocalResponseTime)
+                    DetailRow(title: "Avg Cloud Response", value: stats.averageCloudResponseTime)
+                }
+                
+                if stats.cloudRequests > 0 {
+                    Section("Cloud Usage") {
+                        DetailRow(title: "Tokens Consumed", value: "\(stats.cloudTokensUsed)")
+                        DetailRow(title: "Total Cost", value: stats.formattedCloudCost)
+                        DetailRow(title: "Avg Cost per Request", value: String(format: "$%.6f", stats.cloudCost / Double(max(stats.cloudRequests, 1))))
+                    }
+                }
+                
+                Section {
+                    Button("Reset All Statistics") {
+                        enhancedLLMManager.resetUsageStatistics()
+                    }
+                    .foregroundColor(.red)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                }
+            }
+            .navigationTitle("Usage Statistics")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
     }
 }
 
