@@ -1,0 +1,66 @@
+
+# Example Macro Configuration
+name: "web_scraping_example"
+description: "Example web scraping automation macro"
+version: "1.0"
+
+triggers:
+  - type: "time"
+    schedule: "0 9 * * *"  # Daily at 9 AM
+  - type: "event"
+    event_name: "data_request"
+
+variables:
+  target_url: "https://example.com"
+  output_file: "./data/scraped_data.json"
+  max_pages: 5
+
+steps:
+  - name: "open_browser"
+    action: "web.open_browser"
+    params:
+      headless: true
+      
+  - name: "navigate_to_site"
+    action: "web.navigate"
+    params:
+      url: "{{ variables.target_url }}"
+      
+  - name: "wait_for_content"
+    action: "web.wait_for_selector"
+    params:
+      selector: ".content"
+      timeout: 10000
+      
+  - name: "inject_scraping_script"
+    action: "web.inject_js"
+    params:
+      script: |
+        return Array.from(document.querySelectorAll('.item')).map(item => ({
+          title: item.querySelector('.title')?.textContent,
+          description: item.querySelector('.description')?.textContent,
+          link: item.querySelector('a')?.href
+        }));
+        
+  - name: "save_data"
+    action: "data.save_json"
+    params:
+      data: "{{ steps.inject_scraping_script.result }}"
+      file: "{{ variables.output_file }}"
+      
+  - name: "close_browser"
+    action: "web.close_browser"
+
+error_handling:
+  on_error: "continue"  # continue, stop, retry
+  max_retries: 3
+  retry_delay: 5
+
+notifications:
+  on_success:
+    - type: "log"
+      message: "Macro completed successfully"
+  on_error:
+    - type: "log"
+      level: "error"
+      message: "Macro failed: {{ error.message }}"
