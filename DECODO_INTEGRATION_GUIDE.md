@@ -1,9 +1,19 @@
 
-# DECODO Unblocker Integration Guide
+# DECODO Site Unblocker Real API Integration Guide
 
 ## Overview
 
-This guide describes the integration of DECODO Unblocker proxy service with the Eiros Agent iOS application for enhanced web automation and browsing capabilities.
+This guide describes the integration of the **real DECODO Site Unblocker API** (decodo.com, formerly Smartproxy) with the Eiros Agent iOS application for enhanced web automation and browsing capabilities.
+
+## ⚠️ IMPORTANT: Real API Integration
+
+**This integration now uses the actual DECODO Site Unblocker service:**
+- **Endpoint**: `unblock.decodo.com:60000`
+- **Authentication**: Username/Password required (from DECODO dashboard)
+- **Service**: Real proxy service with CAPTCHA bypass, JavaScript rendering, and geo-targeting
+- **Billing**: Pay-per-request or pay-per-GB pricing
+
+**Previous Implementation Error**: The earlier version created a mock implementation with fake endpoints (`proxy.decodo.io`, `backup.decodo.io`). This has been corrected to use the real DECODO API.
 
 ## Features
 
@@ -60,11 +70,19 @@ UI Components
 └── AutomationPanelView (Quick Controls)
 ```
 
-### DECODO Endpoints
+### DECODO Real API Configuration
 
-- **Primary HTTP**: `proxy.decodo.io:8080`
-- **Backup HTTP**: `backup.decodo.io:8080`  
-- **SOCKS5**: `proxy.decodo.io:1080`
+- **Endpoint**: `unblock.decodo.com:60000`
+- **Protocol**: HTTP/HTTPS Proxy
+- **Authentication**: Username/Password (required)
+- **Features**: JavaScript rendering, CAPTCHA bypass, geo-targeting, session management
+
+### Getting Started
+
+1. **Sign up at DECODO**: Visit [decodo.com](https://decodo.com) and create an account
+2. **Get credentials**: Access your dashboard and generate API credentials
+3. **Configure in app**: Use the DECODO Settings view to enter your credentials
+4. **Test connection**: Use the built-in connection test to verify setup
 
 ## Usage
 

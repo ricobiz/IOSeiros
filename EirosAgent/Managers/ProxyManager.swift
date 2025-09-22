@@ -23,11 +23,9 @@ class ProxyManager: ObservableObject {
     @Published var lastError: String?
     @Published var availableProxies: [ProxyConfiguration] = []
     
-    // MARK: - DECODO Configuration
-    private let decodoPrimaryEndpoint = "proxy.decodo.io"
-    private let decodoPrimaryPort = 8080
-    private let decodoSecondaryEndpoint = "backup.decodo.io"
-    private let decodoSecondaryPort = 8080
+    // MARK: - DECODO Real API Configuration
+    private let decodorealEndpoint = "unblock.decodo.com"
+    private let decodoRealPort = 60000
     
     // MARK: - Network Monitoring
     private var networkMonitor: NWPathMonitor?
@@ -53,48 +51,23 @@ class ProxyManager: ObservableObject {
     // MARK: - Proxy Configuration
     
     private func loadProxyConfigurations() {
-        // DECODO Unblocker configurations
-        let decodoPrimary = ProxyConfiguration(
-            id: "decodo-primary",
-            name: "DECODO Unblocker (Primary)",
-            type: .http,
-            host: decodoPrimaryEndpoint,
-            port: decodoPrimaryPort,
-            username: nil, // DECODO typically doesn't require auth
-            password: nil,
-            isDefault: true,
-            capabilities: [.webUnblocking, .geoBypass, .antiDetection]
-        )
+        // Load DECODO credentials first
+        DECODOConfiguration.loadCredentials()
         
-        let decodoSecondary = ProxyConfiguration(
-            id: "decodo-secondary",
-            name: "DECODO Unblocker (Backup)",
-            type: .http,
-            host: decodoSecondaryEndpoint,
-            port: decodoSecondaryPort,
-            username: nil,
-            password: nil,
-            isDefault: false,
-            capabilities: [.webUnblocking, .geoBypass, .antiDetection]
-        )
-        
-        // Add SOCKS5 configuration for advanced use cases
-        let decodoSOCKS = ProxyConfiguration(
-            id: "decodo-socks",
-            name: "DECODO SOCKS5",
-            type: .socks5,
-            host: decodoPrimaryEndpoint,
-            port: 1080,
-            username: nil,
-            password: nil,
-            isDefault: false,
-            capabilities: [.webUnblocking, .geoBypass, .antiDetection, .fullTunneling]
-        )
-        
-        availableProxies = [decodoPrimary, decodoSecondary, decodoSOCKS]
+        // Get real DECODO configurations
+        availableProxies = DECODOConfiguration.getAllProxyConfigurations()
         
         // Load custom configurations from UserDefaults if any
         loadCustomProxyConfigurations()
+        
+        // Set default proxy if credentials are available
+        if let defaultProxy = availableProxies.first(where: { $0.isDefault }) {
+            currentProxy = defaultProxy
+            print("✅ DECODO Real API proxy loaded: \(defaultProxy.name)")
+        } else {
+            print("⚠️ No DECODO proxy available - credentials may not be configured")
+            print("📝 Please configure DECODO credentials in app settings")
+        }
     }
     
     private func loadCustomProxyConfigurations() {
@@ -441,12 +414,16 @@ enum ProxyCapability: String, Codable, CaseIterable {
     case geoBypass = "geo_bypass"
     case antiDetection = "anti_detection"
     case fullTunneling = "full_tunneling"
+    case javascriptRendering = "javascript_rendering"
+    case captchaBypass = "captcha_bypass"
     
     var displayName: String {
         switch self {
         case .webUnblocking: return "Web Unblocking"
         case .geoBypass: return "Geo Bypass"
         case .antiDetection: return "Anti-Detection"
+        case .javascriptRendering: return "JavaScript Rendering"
+        case .captchaBypass: return "CAPTCHA Bypass"
         case .fullTunneling: return "Full Tunneling"
         }
     }

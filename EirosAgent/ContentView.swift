@@ -100,17 +100,19 @@ struct ContentView: View {
     }
     
     private func initializeApp() {
-        // Initialize DECODO proxy configurations
+        // Initialize DECODO Real API configurations
         proxyManager.loadDECODOConfigurations()
         
-        // Auto-enable proxy if configured
+        // Auto-enable proxy if configured and credentials are available
         Task {
-            if UserDefaults.standard.bool(forKey: "AutoEnableProxy") {
+            if UserDefaults.standard.bool(forKey: "AutoEnableProxy") && DECODOConfiguration.hasValidCredentials() {
                 await proxyManager.enableDECODOPrimary()
+            } else if !DECODOConfiguration.hasValidCredentials() {
+                print("⚠️ DECODO credentials not configured - proxy auto-enable skipped")
             }
         }
         
-        print("🚀 Eiros Agent initialized with DECODO Unblocker support")
+        print("🚀 Eiros Agent initialized with DECODO Site Unblocker (Real API) support")
     }
 }
 
@@ -182,19 +184,26 @@ struct ProxyStatusSheet: View {
                         .buttonStyle(.bordered)
                         .foregroundColor(.red)
                     } else {
-                        Button("Connect to DECODO Primary") {
-                            Task {
-                                await proxyManager.enableDECODOPrimary()
+                        if DECODOConfiguration.hasValidCredentials() {
+                            Button("Connect to DECODO Site Unblocker") {
+                                Task {
+                                    await proxyManager.enableDECODOPrimary()
+                                }
+                            }
+                            .buttonStyle(.borderedProminent)
+                        } else {
+                            NavigationLink(destination: DECODOSettingsView()) {
+                                HStack {
+                                    Image(systemName: "gear")
+                                    Text("Configure DECODO Credentials")
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.orange)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
                             }
                         }
-                        .buttonStyle(.borderedProminent)
-                        
-                        Button("Connect to DECODO Backup") {
-                            Task {
-                                await proxyManager.enableDECODOSecondary()
-                            }
-                        }
-                        .buttonStyle(.bordered)
                     }
                 }
                 

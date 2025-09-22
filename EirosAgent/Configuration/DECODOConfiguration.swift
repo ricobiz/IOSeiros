@@ -9,12 +9,15 @@
 import Foundation
 
 struct DECODOConfiguration {
-    // MARK: - DECODO Unblocker Endpoints
-    static let primaryEndpoint = "proxy.decodo.io"
-    static let primaryPort = 8080
-    static let secondaryEndpoint = "backup.decodo.io"
-    static let secondaryPort = 8080
-    static let socksPort = 1080
+    // MARK: - DECODO Site Unblocker Real API Endpoints
+    // Real decodo.com Site Unblocker endpoint (formerly Smartproxy)
+    static let realEndpoint = "unblock.decodo.com"
+    static let realPort = 60000
+    
+    // MARK: - Authentication (Required for real API)
+    // These should be configured by user in app settings
+    static var username: String? = nil
+    static var password: String? = nil
     
     // MARK: - Connection Settings
     static let connectionTimeout: TimeInterval = 30.0
@@ -22,17 +25,29 @@ struct DECODOConfiguration {
     static let healthCheckInterval: TimeInterval = 60.0
     static let latencyCheckInterval: TimeInterval = 30.0
     
-    // MARK: - Anti-Detection Features
-    static let userAgentRotation = true
-    static let headerRandomization = true
-    static let connectionPooling = true
-    static let requestThrottling = true
+    // MARK: - Real API Features (Built into decodo.com service)
+    static let automaticUnblocking = true
+    static let javascriptRendering = true
+    static let captchaBypass = true
+    static let geoTargeting = true
+    static let sessionManagement = true
     
-    // MARK: - Supported Capabilities
+    // MARK: - Supported Capabilities (Real decodo.com features)
     static let supportedCapabilities: [ProxyCapability] = [
         .webUnblocking,
         .geoBypass,
-        .antiDetection
+        .antiDetection,
+        .javascriptRendering,
+        .captchaBypass
+    ]
+    
+    // MARK: - API Parameters
+    static let supportedGeoLocations = [
+        "US", "UK", "DE", "FR", "CA", "AU", "JP", "BR", "IN", "SG"
+    ]
+    
+    static let supportedLocales = [
+        "en-US", "en-GB", "de-DE", "fr-FR", "es-ES", "pt-BR", "ja-JP"
     ]
     
     // MARK: - Default Headers for Anti-Detection
@@ -67,56 +82,95 @@ struct DECODOConfiguration {
         return userAgentPool.randomElement() ?? userAgentPool[0]
     }
     
-    static func getDefaultProxyConfiguration() -> ProxyConfiguration {
+    // MARK: - Authentication Management
+    static func setCredentials(username: String, password: String) {
+        self.username = username
+        self.password = password
+        UserDefaults.standard.set(username, forKey: "decodo_username")
+        UserDefaults.standard.set(password, forKey: "decodo_password")
+    }
+    
+    static func loadCredentials() {
+        username = UserDefaults.standard.string(forKey: "decodo_username")
+        password = UserDefaults.standard.string(forKey: "decodo_password")
+    }
+    
+    static func clearCredentials() {
+        username = nil
+        password = nil
+        UserDefaults.standard.removeObject(forKey: "decodo_username")
+        UserDefaults.standard.removeObject(forKey: "decodo_password")
+    }
+    
+    static func hasValidCredentials() -> Bool {
+        return username != nil && password != nil && !username!.isEmpty && !password!.isEmpty
+    }
+    
+    static func getDefaultProxyConfiguration() -> ProxyConfiguration? {
+        guard hasValidCredentials() else {
+            print("❌ DECODO credentials not configured")
+            return nil
+        }
+        
         return ProxyConfiguration(
-            id: "decodo-default",
-            name: "DECODO Unblocker",
+            id: "decodo-real",
+            name: "DECODO Site Unblocker (Real API)",
             type: .http,
-            host: primaryEndpoint,
-            port: primaryPort,
-            username: nil,
-            password: nil,
+            host: realEndpoint,
+            port: realPort,
+            username: username,
+            password: password,
             isDefault: true,
             capabilities: supportedCapabilities
         )
     }
     
     static func getAllProxyConfigurations() -> [ProxyConfiguration] {
+        guard hasValidCredentials() else {
+            print("❌ DECODO credentials not configured - returning empty configuration list")
+            return []
+        }
+        
         return [
             ProxyConfiguration(
-                id: "decodo-primary",
-                name: "DECODO Unblocker (Primary)",
+                id: "decodo-real",
+                name: "DECODO Site Unblocker (Real API)",
                 type: .http,
-                host: primaryEndpoint,
-                port: primaryPort,
-                username: nil,
-                password: nil,
+                host: realEndpoint,
+                port: realPort,
+                username: username,
+                password: password,
                 isDefault: true,
                 capabilities: supportedCapabilities
-            ),
-            ProxyConfiguration(
-                id: "decodo-secondary",
-                name: "DECODO Unblocker (Backup)",
-                type: .http,
-                host: secondaryEndpoint,
-                port: secondaryPort,
-                username: nil,
-                password: nil,
-                isDefault: false,
-                capabilities: supportedCapabilities
-            ),
-            ProxyConfiguration(
-                id: "decodo-socks",
-                name: "DECODO SOCKS5",
-                type: .socks5,
-                host: primaryEndpoint,
-                port: socksPort,
-                username: nil,
-                password: nil,
-                isDefault: false,
-                capabilities: supportedCapabilities + [.fullTunneling]
             )
         ]
+    }
+    
+    // MARK: - API Request Headers Factory
+    static func createAPIHeaders(geoLocation: String? = nil, locale: String? = nil, sessionId: String? = nil, enableJS: Bool = false) -> [String: String] {
+        var headers = defaultHeaders
+        
+        // Geo-location targeting
+        if let geo = geoLocation {
+            headers["X-SU-Geo"] = geo
+        }
+        
+        // Locale setting
+        if let loc = locale {
+            headers["X-SU-Locale"] = loc
+        }
+        
+        // Session management
+        if let session = sessionId {
+            headers["X-SU-Session-Id"] = session
+        }
+        
+        // JavaScript rendering
+        if enableJS {
+            headers["X-SU-Headless"] = "html"
+        }
+        
+        return headers
     }
     
     static func getOptimizedSessionConfiguration() -> URLSessionConfiguration {
@@ -247,35 +301,42 @@ struct ProxyTestResult {
     }
 }
 
-// MARK: - DECODO Integration Extensions
+// MARK: - DECODO Real API Integration Extensions
 
 extension ProxyManager {
     func loadDECODOConfigurations() {
+        // Load credentials and configurations
+        DECODOConfiguration.loadCredentials()
         let decodoConfigs = DECODOConfiguration.getAllProxyConfigurations()
         
         // Replace existing DECODO configurations
         availableProxies.removeAll { $0.id.hasPrefix("decodo-") }
         availableProxies.append(contentsOf: decodoConfigs)
         
-        print("✅ Loaded \(decodoConfigs.count) DECODO proxy configurations")
+        if decodoConfigs.isEmpty {
+            print("⚠️ No DECODO configurations loaded - credentials may not be set")
+        } else {
+            print("✅ Loaded \(decodoConfigs.count) DECODO Real API proxy configurations")
+        }
     }
     
     func enableDECODOPrimary() async {
-        if let primaryConfig = availableProxies.first(where: { $0.id == "decodo-primary" }) {
-            await enableProxy(with: primaryConfig)
+        // For real API, we only have one configuration
+        if let realConfig = availableProxies.first(where: { $0.id == "decodo-real" }) {
+            await enableProxy(with: realConfig)
+        } else {
+            print("❌ DECODO Real API configuration not found - check credentials")
         }
     }
     
     func enableDECODOSecondary() async {
-        if let secondaryConfig = availableProxies.first(where: { $0.id == "decodo-secondary" }) {
-            await enableProxy(with: secondaryConfig)
-        }
+        // For real API, secondary is the same as primary (single endpoint)
+        await enableDECODOPrimary()
     }
     
     func enableDECODOSOCKS() async {
-        if let socksConfig = availableProxies.first(where: { $0.id == "decodo-socks" }) {
-            await enableProxy(with: socksConfig)
-        }
+        // Real DECODO API doesn't use SOCKS5, redirect to HTTP proxy
+        await enableDECODOPrimary()
     }
     
     func testAllDECODOProxies() async -> [String: ProxyTestResult] {
@@ -299,9 +360,9 @@ extension WebViewManager {
     
     func getDECODOStatus() -> String {
         if isProxyEnabled {
-            return "DECODO Unblocker: Active"
+            return "DECODO Site Unblocker (Real API): Active"
         } else {
-            return "DECODO Unblocker: Inactive"
+            return "DECODO Site Unblocker (Real API): Inactive"
         }
     }
 }
@@ -309,12 +370,12 @@ extension WebViewManager {
 extension AutomationController {
     func enableDECODOForAutomation() async {
         await enableProxyForAutomation()
-        addLogEntry("DECODO Unblocker enabled for automation", type: .info)
+        addLogEntry("DECODO Site Unblocker (Real API) enabled for automation", type: .info)
     }
     
     func disableDECODOForAutomation() {
         disableProxyForAutomation()
-        addLogEntry("DECODO Unblocker disabled for automation", type: .info)
+        addLogEntry("DECODO Site Unblocker (Real API) disabled for automation", type: .info)
     }
     
     func getDECODOAutomationStatus() -> String {

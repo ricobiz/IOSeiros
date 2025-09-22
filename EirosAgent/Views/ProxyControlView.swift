@@ -340,14 +340,36 @@ struct ProxySettingsView: View {
                     Toggle("Auto-fallback on failure", isOn: .constant(true))
                 }
                 
-                Section("DECODO Configuration") {
-                    Text("Primary Endpoint: proxy.decodo.io:8080")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Text("Backup Endpoint: backup.decodo.io:8080")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                Section("DECODO Real API Configuration") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Endpoint:")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Text("unblock.decodo.com:60000")
+                                .font(.caption)
+                                .foregroundColor(.primary)
+                        }
+                        
+                        HStack {
+                            Text("Status:")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Text(DECODOConfiguration.hasValidCredentials() ? "✅ Configured" : "❌ Not Configured")
+                                .font(.caption)
+                                .foregroundColor(DECODOConfiguration.hasValidCredentials() ? .green : .red)
+                        }
+                        
+                        NavigationLink(destination: DECODOSettingsView()) {
+                            HStack {
+                                Image(systemName: "gear")
+                                Text("Configure DECODO Credentials")
+                            }
+                            .foregroundColor(.blue)
+                        }
+                    }
                 }
                 
                 Section("Advanced") {
