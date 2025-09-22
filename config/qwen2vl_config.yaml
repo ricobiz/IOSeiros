@@ -1,0 +1,88 @@
+# Qwen2VL Configuration
+qwen2vl:
+  # Model configuration
+  model_name: "Qwen/Qwen2-VL-7B-Instruct"
+  
+  # API configuration (optional - for cloud/hosted inference)
+  api_endpoint: null  # Set to your API endpoint if using hosted service
+  api_key: null       # Set your API key if using hosted service
+  
+  # Generation parameters
+  max_tokens: 1024
+  temperature: 0.1
+  
+  # Analysis capabilities
+  enable_scene_description: true
+  enable_object_analysis: true
+  enable_text_extraction: true
+  enable_ui_analysis: true
+  enable_reasoning: true
+  
+  # Performance settings
+  batch_size: 4
+  timeout: 30.0
+  
+  # Local model settings (if using local inference)
+  local_model:
+    device: "auto"  # "cpu", "cuda", "auto"
+    precision: "fp16"  # "fp32", "fp16", "int8"
+    cache_dir: "./models/qwen2vl"
+    
+# Vision system configuration with Qwen2VL integration
+vision:
+  # Screen capture settings
+  screen_capture:
+    default_format: "PNG"
+    quality: 95
+    
+  # Image analysis settings
+  analysis:
+    similarity_threshold: 0.8
+    object_detection: true
+    text_detection: true
+    
+  # Object detection settings
+  object_detection:
+    confidence_threshold: 0.5
+    nms_threshold: 0.4
+    
+  # Qwen2VL integration settings
+  qwen2vl:
+    model_name: "Qwen/Qwen2-VL-7B-Instruct"
+    max_tokens: 1024
+    temperature: 0.1
+    enable_scene_description: true
+    enable_object_analysis: true
+    enable_text_extraction: true
+    enable_ui_analysis: true
+    enable_reasoning: true
+
+# Example usage scenarios
+usage_examples:
+  # Basic image analysis
+  basic_analysis:
+    prompt: "Describe what you see in this image"
+    analysis_type: "comprehensive"
+    
+  # UI element detection
+  ui_analysis:
+    prompt: "Identify all interactive UI elements in this interface"
+    analysis_type: "ui"
+    ui_type: "mobile"
+    
+  # Text extraction
+  text_extraction:
+    prompt: "Extract all text from this image"
+    analysis_type: "text"
+    language: "auto"
+    
+  # Visual reasoning
+  reasoning:
+    prompt: "What actions can a user perform in this interface?"
+    analysis_type: "reasoning"
+    
+  # Scene description
+  scene_description:
+    prompt: null  # Will use default scene description prompt
+    analysis_type: "scene"
+    detail_level: "detailed"

@@ -13,6 +13,7 @@ from ..core.exceptions import VisionError, ScreenCaptureError
 from .screen_capture import ScreenCaptureManager
 from .image_analyzer import ImageAnalyzer
 from .object_detector import ObjectDetector
+from .qwen2vl_analyzer import Qwen2VLAnalyzer
 
 
 class VisionManager:
@@ -28,6 +29,7 @@ class VisionManager:
         self.screen_capture = ScreenCaptureManager(config.get("screen_capture", {}))
         self.image_analyzer = ImageAnalyzer(config.get("analysis", {}))
         self.object_detector = ObjectDetector(config.get("object_detection", {}))
+        self.qwen2vl_analyzer = Qwen2VLAnalyzer(config.get("qwen2vl", {}))
         
         self.is_initialized = False
         logger.info("VisionManager initialized")
@@ -41,6 +43,7 @@ class VisionManager:
             await self.screen_capture.initialize()
             await self.image_analyzer.initialize()
             await self.object_detector.initialize()
+            await self.qwen2vl_analyzer.initialize()
             
             self.is_initialized = True
             logger.info("Vision system initialized successfully")
@@ -57,6 +60,7 @@ class VisionManager:
             await self.screen_capture.shutdown()
             await self.image_analyzer.shutdown()
             await self.object_detector.shutdown()
+            await self.qwen2vl_analyzer.shutdown()
             
             self.is_initialized = False
             logger.info("Vision system shutdown complete")
@@ -361,11 +365,153 @@ class VisionManager:
         
         return await self.screen_capture.list_windows()
     
+    # Qwen2VL Integration Methods
+    async def analyze_with_qwen2vl(self, image: Union[str, Path, np.ndarray, Image.Image], prompt: Optional[str] = None, analysis_type: str = "comprehensive") -> Dict[str, Any]:
+        """Analyze image using Qwen2VL multimodal capabilities"""
+        if not self.is_initialized:
+            raise VisionError("Vision system not initialized")
+        
+        try:
+            logger.info("Analyzing image with Qwen2VL")
+            
+            # Load image if path provided
+            if isinstance(image, (str, Path)):
+                image = Image.open(image)
+            elif isinstance(image, np.ndarray):
+                image = Image.fromarray(image)
+            
+            result = await self.qwen2vl_analyzer.analyze_image(image, prompt, analysis_type)
+            
+            logger.info("Qwen2VL analysis completed")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Qwen2VL analysis failed: {e}")
+            raise VisionError(f"Qwen2VL analysis failed: {e}")
+    
+    async def describe_screen_with_qwen2vl(self, region: Optional[Dict[str, int]] = None, detail_level: str = "detailed") -> Dict[str, Any]:
+        """Capture screen and describe it using Qwen2VL"""
+        if not self.is_initialized:
+            raise VisionError("Vision system not initialized")
+        
+        try:
+            logger.info("Capturing and describing screen with Qwen2VL")
+            
+            # Capture screen
+            screenshot = await self.capture_screen(region)
+            
+            # Analyze with Qwen2VL
+            result = await self.qwen2vl_analyzer.describe_scene(screenshot, detail_level)
+            
+            logger.info("Screen description completed")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Screen description failed: {e}")
+            raise VisionError(f"Screen description failed: {e}")
+    
+    async def analyze_ui_with_qwen2vl(self, image: Union[str, Path, np.ndarray, Image.Image], ui_type: str = "general") -> Dict[str, Any]:
+        """Analyze UI elements using Qwen2VL"""
+        if not self.is_initialized:
+            raise VisionError("Vision system not initialized")
+        
+        try:
+            logger.info("Analyzing UI with Qwen2VL")
+            
+            # Load image if path provided
+            if isinstance(image, (str, Path)):
+                image = Image.open(image)
+            elif isinstance(image, np.ndarray):
+                image = Image.fromarray(image)
+            
+            result = await self.qwen2vl_analyzer.analyze_ui_elements(image, ui_type)
+            
+            logger.info("UI analysis completed")
+            return result
+            
+        except Exception as e:
+            logger.error(f"UI analysis failed: {e}")
+            raise VisionError(f"UI analysis failed: {e}")
+    
+    async def extract_text_with_qwen2vl(self, image: Union[str, Path, np.ndarray, Image.Image], language: str = "auto") -> Dict[str, Any]:
+        """Extract text using Qwen2VL"""
+        if not self.is_initialized:
+            raise VisionError("Vision system not initialized")
+        
+        try:
+            logger.info("Extracting text with Qwen2VL")
+            
+            # Load image if path provided
+            if isinstance(image, (str, Path)):
+                image = Image.open(image)
+            elif isinstance(image, np.ndarray):
+                image = Image.fromarray(image)
+            
+            result = await self.qwen2vl_analyzer.extract_text(image, language)
+            
+            logger.info("Text extraction completed")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Text extraction failed: {e}")
+            raise VisionError(f"Text extraction failed: {e}")
+    
+    async def visual_reasoning_with_qwen2vl(self, image: Union[str, Path, np.ndarray, Image.Image], question: str) -> Dict[str, Any]:
+        """Perform visual reasoning using Qwen2VL"""
+        if not self.is_initialized:
+            raise VisionError("Vision system not initialized")
+        
+        try:
+            logger.info("Performing visual reasoning with Qwen2VL")
+            
+            # Load image if path provided
+            if isinstance(image, (str, Path)):
+                image = Image.open(image)
+            elif isinstance(image, np.ndarray):
+                image = Image.fromarray(image)
+            
+            result = await self.qwen2vl_analyzer.visual_reasoning(image, question)
+            
+            logger.info("Visual reasoning completed")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Visual reasoning failed: {e}")
+            raise VisionError(f"Visual reasoning failed: {e}")
+    
+    async def batch_analyze_with_qwen2vl(self, images: List[Union[str, Path, np.ndarray, Image.Image]], prompts: Optional[List[str]] = None, analysis_type: str = "comprehensive") -> List[Dict[str, Any]]:
+        """Batch analyze multiple images with Qwen2VL"""
+        if not self.is_initialized:
+            raise VisionError("Vision system not initialized")
+        
+        try:
+            logger.info(f"Batch analyzing {len(images)} images with Qwen2VL")
+            
+            # Process images
+            processed_images = []
+            for image in images:
+                if isinstance(image, (str, Path)):
+                    processed_images.append(Image.open(image))
+                elif isinstance(image, np.ndarray):
+                    processed_images.append(Image.fromarray(image))
+                else:
+                    processed_images.append(image)
+            
+            result = await self.qwen2vl_analyzer.batch_analyze(processed_images, prompts, analysis_type)
+            
+            logger.info("Batch analysis completed")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Batch analysis failed: {e}")
+            raise VisionError(f"Batch analysis failed: {e}")
+    
     def get_status(self) -> Dict[str, Any]:
         """Get vision system status"""
         return {
             "initialized": self.is_initialized,
             "screen_capture": self.screen_capture.get_status(),
             "image_analyzer": self.image_analyzer.get_status(),
-            "object_detector": self.object_detector.get_status()
+            "object_detector": self.object_detector.get_status(),
+            "qwen2vl_analyzer": self.qwen2vl_analyzer.get_status()
         }

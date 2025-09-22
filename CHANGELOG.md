@@ -5,6 +5,71 @@ All notable changes to the Eiros Agent project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-09-22
+
+### 🚀 Major Feature Addition - Qwen2VL Integration
+
+This release introduces advanced multimodal vision-language capabilities through Qwen2VL integration, significantly enhancing the system's image understanding and analysis capabilities.
+
+### ✨ Added
+
+#### 🔍 Qwen2VL Multimodal Analysis
+- **Qwen2VLAnalyzer**: New analyzer class for advanced image understanding
+- **Scene Description**: Generate detailed natural language descriptions of images
+- **Object Analysis**: Identify and analyze objects with contextual understanding
+- **Text Extraction**: Extract and analyze text content from images using vision-language models
+- **UI Analysis**: Analyze user interface elements and interactions
+- **Visual Reasoning**: Answer questions about image content using visual reasoning
+- **Batch Processing**: Efficiently analyze multiple images with customizable prompts
+
+#### 🔧 Vision System Enhancements
+- **VisionManager Integration**: Seamless integration of Qwen2VL with existing vision system
+- **New API Methods**: 
+  - `analyze_with_qwen2vl()` - Core multimodal analysis
+  - `describe_screen_with_qwen2vl()` - Screen capture and description
+  - `analyze_ui_with_qwen2vl()` - UI element analysis
+  - `extract_text_with_qwen2vl()` - Advanced text extraction
+  - `visual_reasoning_with_qwen2vl()` - Visual question answering
+  - `batch_analyze_with_qwen2vl()` - Batch image processing
+
+#### 📋 Configuration & Documentation
+- **Configuration Support**: YAML-based configuration for Qwen2VL settings
+- **Flexible Deployment**: Support for both API-based and local inference
+- **Comprehensive Documentation**: Complete integration guide and API reference
+- **Usage Examples**: Practical examples for common use cases
+- **Test Suite**: Comprehensive test coverage for all new functionality
+
+#### 🛠 Dependencies & Requirements
+- **Enhanced Requirements**: Added Qwen2VL-specific dependencies
+- **PyTorch Integration**: Enhanced PyTorch and torchvision support
+- **Transformers Support**: Updated transformers library integration
+- **Image Processing**: Enhanced image processing capabilities
+
+### 🔄 Changed
+- **Vision Module Structure**: Extended vision module with new analyzer
+- **Status Reporting**: Enhanced status reporting to include Qwen2VL analyzer
+- **Error Handling**: Improved error handling for multimodal operations
+
+### 📚 Documentation
+- **Integration Guide**: Complete Qwen2VL integration documentation
+- **API Reference**: Detailed API documentation for all new methods
+- **Configuration Guide**: Comprehensive configuration options
+- **Examples**: Practical usage examples and scenarios
+- **Testing Guide**: Test implementation and coverage information
+
+### 🧪 Testing
+- **Unit Tests**: Comprehensive unit tests for Qwen2VLAnalyzer
+- **Integration Tests**: VisionManager integration testing
+- **Mock Testing**: Proper mocking for external dependencies
+- **Error Handling Tests**: Comprehensive error scenario testing
+
+### 💡 Use Cases Enabled
+- **iOS App Analysis**: Analyze iOS app interfaces and functionality
+- **Automated Testing**: Visual verification of UI states and elements
+- **Content Analysis**: Understand and describe visual content
+- **Accessibility**: Analyze UI accessibility and usability
+- **Documentation**: Generate descriptions for visual documentation
+
 ## [1.0.0] - 2025-09-21
 
 ### 🎉 Initial Release - Complete 3-Stage Development
