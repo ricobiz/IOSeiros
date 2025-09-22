@@ -10,11 +10,12 @@ import SwiftUI
 
 struct EnhancedControlRoomView: View {
     @StateObject private var enhancedLLMManager = EnhancedLLMManager.shared
+    @StateObject private var openRouterManager = OpenRouterManager.shared
     @StateObject private var visionManager = VisionManager.shared
     @StateObject private var screenCaptureManager = ScreenCaptureManager.shared
     
     @State private var messageText = ""
-    @State private var showingModelSelector = false
+    @State private var showingModeSelector = false
     @State private var showingVisionAnalysis = false
     @State private var showingImagePicker = false
     @State private var selectedImage: UIImage?
@@ -32,7 +33,7 @@ struct EnhancedControlRoomView: View {
                     ScrollView {
                         LazyVStack(spacing: 12) {
                             ForEach(enhancedLLMManager.chatHistory) { message in
-                                EnhancedMessageBubble(message: message)
+                                MessageBubble(message: message)
                                     .id(message.id)
                             }
                         }
@@ -53,19 +54,19 @@ struct EnhancedControlRoomView: View {
                 inputArea
             }
             .navigationBarHidden(true)
-            .sheet(isPresented: $showingModelSelector) {
-                ModelSelectorView()
+            .sheet(isPresented: $showingModeSelector) {
+                LLMModeSelectorView()
             }
             .sheet(isPresented: $showingVisionAnalysis) {
                 VisionAnalysisView()
             }
             .sheet(isPresented: $showingImagePicker) {
-                ImagePicker(selectedImage: $selectedImage)
+                ImagePickerView(selectedImage: $selectedImage)
             }
             .onChange(of: selectedImage) { image in
                 if let image = image {
                     Task {
-                        await enhancedLLMManager.analyzeImage(image)
+                        await enhancedLLMManager.sendMessageWithVision("Analyze this image", image: image)
                     }
                 }
             }
@@ -82,10 +83,20 @@ struct EnhancedControlRoomView: View {
                         .font(.title2)
                         .fontWeight(.bold)
                     
-                    if let modelInfo = enhancedLLMManager.modelInfo {
-                        Text(modelInfo.name)
+                    HStack(spacing: 8) {
+                        Image(systemName: enhancedLLMManager.currentMode.icon)
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                        
+                        Text(enhancedLLMManager.currentMode.displayName)
                             .font(.caption)
                             .foregroundColor(.secondary)
+                        
+                        if let modelInfo = enhancedLLMManager.modelInfo {
+                            Text("• \(modelInfo.name)")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
                     }
                 }
                 
@@ -110,7 +121,7 @@ struct EnhancedControlRoomView: View {
                             .foregroundColor(.secondary)
                     }
                     .onTapGesture {
-                        showingModelSelector = true
+                        showingModeSelector = true
                     }
                 }
             }
@@ -124,7 +135,7 @@ struct EnhancedControlRoomView: View {
                         color: .blue
                     ) {
                         Task {
-                            await enhancedLLMManager.analyzeScreenshot()
+                            await captureAndAnalyzeScreen()
                         }
                     }
                     
@@ -134,18 +145,16 @@ struct EnhancedControlRoomView: View {
                         color: .green
                     ) {
                         Task {
-                            await enhancedLLMManager.extractTextFromScreen()
+                            await extractTextFromScreen()
                         }
                     }
                     
                     QuickActionButton(
-                        title: "Find UI",
-                        icon: "rectangle.3.group",
+                        title: "Mode: \(enhancedLLMManager.currentMode.displayName)",
+                        icon: enhancedLLMManager.currentMode.icon,
                         color: .orange
                     ) {
-                        Task {
-                            await enhancedLLMManager.findUIElements(matching: "button")
-                        }
+                        showingModeSelector = true
                     }
                     
                     QuickActionButton(
@@ -176,11 +185,19 @@ struct EnhancedControlRoomView: View {
                         icon: "clock"
                     )
                     
-                    MetricBadge(
-                        title: "Memory",
-                        value: enhancedLLMManager.memoryUsage,
-                        icon: "memorychip"
-                    )
+                    if enhancedLLMManager.currentMode == .cloud && openRouterManager.isConfigured {
+                        MetricBadge(
+                            title: "Tokens",
+                            value: "\(openRouterManager.totalTokensUsed)",
+                            icon: "number"
+                        )
+                        
+                        MetricBadge(
+                            title: "Cost",
+                            value: String(format: "$%.4f", openRouterManager.totalCost),
+                            icon: "dollarsign.circle"
+                        )
+                    }
                     
                     Spacer()
                     
@@ -228,12 +245,22 @@ struct EnhancedControlRoomView: View {
             await enhancedLLMManager.sendMessage(message)
         }
     }
+    
+    private func captureAndAnalyzeScreen() async {
+        // Simulate screen capture and analysis
+        await enhancedLLMManager.sendMessage("Please analyze the current screen and provide insights about what you see.")
+    }
+    
+    private func extractTextFromScreen() async {
+        // Simulate text extraction
+        await enhancedLLMManager.sendMessage("Please extract and list all text visible on the current screen.")
+    }
 }
 
 // MARK: - Supporting Views
 
-struct EnhancedMessageBubble: View {
-    let message: EnhancedChatMessage
+struct MessageBubble: View {
+    let message: ChatMessage
     
     var body: some View {
         HStack {
@@ -243,33 +270,19 @@ struct EnhancedMessageBubble: View {
             
             VStack(alignment: message.isUser ? .trailing : .leading, spacing: 8) {
                 // Message content
-                VStack(alignment: .leading, spacing: 8) {
-                    if !message.attachments.isEmpty {
-                        ForEach(message.attachments) { attachment in
-                            AttachmentView(attachment: attachment)
-                        }
-                    }
-                    
-                    Text(message.content)
-                        .font(.body)
-                        .foregroundColor(message.isUser ? .white : .primary)
-                }
-                .padding()
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(backgroundColorForMessage(message))
-                )
+                Text(message.content)
+                    .font(.body)
+                    .foregroundColor(message.isUser ? .white : .primary)
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(message.isUser ? Color.blue : Color(UIColor.systemGray5))
+                    )
                 
                 // Message metadata
-                HStack(spacing: 8) {
-                    if !message.isUser {
-                        MessageTypeIndicator(type: message.messageType)
-                    }
-                    
-                    Text(message.timestamp, style: .time)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
+                Text(message.timestamp, style: .time)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
             }
             
             if !message.isUser {
@@ -277,89 +290,9 @@ struct EnhancedMessageBubble: View {
             }
         }
     }
-    
-    private func backgroundColorForMessage(_ message: EnhancedChatMessage) -> Color {
-        if message.isUser {
-            return .blue
-        } else {
-            switch message.messageType {
-            case .text: return Color(UIColor.systemGray5)
-            case .vision: return Color.purple.opacity(0.1)
-            case .system: return Color.orange.opacity(0.1)
-            case .error: return Color.red.opacity(0.1)
-            }
-        }
-    }
 }
 
-struct AttachmentView: View {
-    let attachment: MessageAttachment
-    
-    var body: some View {
-        switch attachment.type {
-        case .image:
-            if let image = UIImage(data: attachment.data) {
-                Image(uiImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxHeight: 200)
-                    .cornerRadius(8)
-            }
-        case .document:
-            HStack {
-                Image(systemName: "doc")
-                Text("Document")
-                    .font(.caption)
-            }
-            .padding(8)
-            .background(Color.gray.opacity(0.2))
-            .cornerRadius(8)
-        case .audio:
-            HStack {
-                Image(systemName: "waveform")
-                Text("Audio")
-                    .font(.caption)
-            }
-            .padding(8)
-            .background(Color.gray.opacity(0.2))
-            .cornerRadius(8)
-        }
-    }
-}
 
-struct MessageTypeIndicator: View {
-    let type: MessageType
-    
-    var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: iconForType(type))
-                .font(.caption2)
-                .foregroundColor(colorForType(type))
-            
-            Text(type.rawValue.capitalized)
-                .font(.caption2)
-                .foregroundColor(colorForType(type))
-        }
-    }
-    
-    private func iconForType(_ type: MessageType) -> String {
-        switch type {
-        case .text: return "text.bubble"
-        case .vision: return "eye"
-        case .system: return "gear"
-        case .error: return "exclamationmark.triangle"
-        }
-    }
-    
-    private func colorForType(_ type: MessageType) -> Color {
-        switch type {
-        case .text: return .blue
-        case .vision: return .purple
-        case .system: return .orange
-        case .error: return .red
-        }
-    }
-}
 
 struct QuickActionButton: View {
     let title: String
@@ -404,97 +337,42 @@ struct MetricBadge: View {
     }
 }
 
-// MARK: - Model Selector
+// MARK: - Image Picker
 
-struct ModelSelectorView: View {
-    @StateObject private var enhancedLLMManager = EnhancedLLMManager.shared
+struct ImagePickerView: UIViewControllerRepresentable {
+    @Binding var selectedImage: UIImage?
     @Environment(\.presentationMode) var presentationMode
     
-    var body: some View {
-        NavigationView {
-            List {
-                Section("Available Models") {
-                    ForEach(LLMModel.allCases, id: \.self) { model in
-                        ModelRow(
-                            model: model,
-                            isSelected: model == enhancedLLMManager.currentModel,
-                            isLoaded: enhancedLLMManager.isModelLoaded
-                        ) {
-                            Task {
-                                await enhancedLLMManager.switchModel(to: model)
-                                presentationMode.wrappedValue.dismiss()
-                            }
-                        }
-                    }
-                }
-                
-                if let modelInfo = enhancedLLMManager.modelInfo {
-                    Section("Current Model Info") {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Capabilities")
-                                .font(.headline)
-                            
-                            ForEach(modelInfo.capabilities, id: \.self) { capability in
-                                Text("• \(capability)")
-                                    .font(.body)
-                            }
-                            
-                            Text("Supported Modalities")
-                                .font(.headline)
-                                .padding(.top)
-                            
-                            ForEach(Array(modelInfo.supportedModalities), id: \.self) { modality in
-                                Text("• \(modality.rawValue.capitalized)")
-                                    .font(.body)
-                            }
-                        }
-                        .padding(.vertical, 4)
-                    }
-                }
-            }
-            .navigationTitle("Select Model")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(trailing: Button("Done") {
-                presentationMode.wrappedValue.dismiss()
-            })
-        }
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.delegate = context.coordinator
+        picker.sourceType = .photoLibrary
+        return picker
     }
-}
-
-struct ModelRow: View {
-    let model: LLMModel
-    let isSelected: Bool
-    let isLoaded: Bool
-    let action: () -> Void
     
-    var body: some View {
-        Button(action: action) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(model.displayName)
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                    
-                    Text("\(model.parameters) parameters • \(model.size)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Text(model.capabilities.joined(separator: " • "))
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                        .lineLimit(2)
-                }
-                
-                Spacer()
-                
-                if isSelected {
-                    Image(systemName: isLoaded ? "checkmark.circle.fill" : "clock.circle")
-                        .foregroundColor(isLoaded ? .green : .orange)
-                }
-            }
-            .padding(.vertical, 4)
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        let parent: ImagePickerView
+        
+        init(_ parent: ImagePickerView) {
+            self.parent = parent
         }
-        .buttonStyle(PlainButtonStyle())
+        
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+            if let image = info[.originalImage] as? UIImage {
+                parent.selectedImage = image
+            }
+            parent.presentationMode.wrappedValue.dismiss()
+        }
+        
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            parent.presentationMode.wrappedValue.dismiss()
+        }
     }
 }
 
