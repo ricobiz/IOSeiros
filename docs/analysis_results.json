@@ -1,0 +1,847 @@
+{
+  "components": {
+    "Core": [
+      {
+        "name": "ContentView",
+        "file": "EirosAgent/ContentView.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI"
+        ]
+      },
+      {
+        "name": "EirosAgentApp",
+        "file": "EirosAgent/EirosAgentApp.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI"
+        ]
+      }
+    ],
+    "Model": [
+      {
+        "name": "ChatMessage",
+        "file": "EirosAgent/Models/ChatMessage.swift",
+        "type": "struct",
+        "imports": [
+          "Foundation"
+        ]
+      },
+      {
+        "name": "ModelInfo",
+        "file": "EirosAgent/Models/ChatMessage.swift",
+        "type": "struct",
+        "imports": [
+          "Foundation"
+        ]
+      },
+      {
+        "name": "VisionAnalysisData",
+        "file": "EirosAgent/Models/ChatMessage.swift",
+        "type": "struct",
+        "imports": [
+          "Foundation"
+        ]
+      },
+      {
+        "name": "ScreenCaptureData",
+        "file": "EirosAgent/Models/ChatMessage.swift",
+        "type": "struct",
+        "imports": [
+          "Foundation"
+        ]
+      }
+    ],
+    "View": [
+      {
+        "name": "ControlRoomView",
+        "file": "EirosAgent/Views/ControlRoomView.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI"
+        ]
+      },
+      {
+        "name": "ChatMessageView",
+        "file": "EirosAgent/Views/ControlRoomView.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI"
+        ]
+      },
+      {
+        "name": "Coordinator",
+        "file": "EirosAgent/Views/VisionAnalysisView.swift",
+        "type": "class",
+        "imports": [
+          "SwiftUI"
+        ]
+      },
+      {
+        "name": "VisionAnalysisView",
+        "file": "EirosAgent/Views/VisionAnalysisView.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI"
+        ]
+      },
+      {
+        "name": "QuickActionCard",
+        "file": "EirosAgent/Views/VisionAnalysisView.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI"
+        ]
+      },
+      {
+        "name": "MetricCard",
+        "file": "EirosAgent/Views/VisionAnalysisView.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI"
+        ]
+      },
+      {
+        "name": "AnalysisResultCard",
+        "file": "EirosAgent/Views/VisionAnalysisView.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI"
+        ]
+      },
+      {
+        "name": "ResultRow",
+        "file": "EirosAgent/Views/VisionAnalysisView.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI"
+        ]
+      },
+      {
+        "name": "ProcessingOverlay",
+        "file": "EirosAgent/Views/VisionAnalysisView.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI"
+        ]
+      },
+      {
+        "name": "ImagePicker",
+        "file": "EirosAgent/Views/VisionAnalysisView.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI"
+        ]
+      },
+      {
+        "name": "BrowserView",
+        "file": "EirosAgent/Views/BrowserView.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI",
+          "WebKit"
+        ]
+      },
+      {
+        "name": "WebViewRepresentable",
+        "file": "EirosAgent/Views/BrowserView.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI",
+          "WebKit"
+        ]
+      },
+      {
+        "name": "EnhancedControlRoomView",
+        "file": "EirosAgent/Views/EnhancedControlRoomView.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI"
+        ]
+      },
+      {
+        "name": "EnhancedMessageBubble",
+        "file": "EirosAgent/Views/EnhancedControlRoomView.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI"
+        ]
+      },
+      {
+        "name": "AttachmentView",
+        "file": "EirosAgent/Views/EnhancedControlRoomView.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI"
+        ]
+      },
+      {
+        "name": "MessageTypeIndicator",
+        "file": "EirosAgent/Views/EnhancedControlRoomView.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI"
+        ]
+      },
+      {
+        "name": "QuickActionButton",
+        "file": "EirosAgent/Views/EnhancedControlRoomView.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI"
+        ]
+      },
+      {
+        "name": "MetricBadge",
+        "file": "EirosAgent/Views/EnhancedControlRoomView.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI"
+        ]
+      },
+      {
+        "name": "ModelSelectorView",
+        "file": "EirosAgent/Views/EnhancedControlRoomView.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI"
+        ]
+      },
+      {
+        "name": "ModelRow",
+        "file": "EirosAgent/Views/EnhancedControlRoomView.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI"
+        ]
+      },
+      {
+        "name": "SettingsView",
+        "file": "EirosAgent/Views/SettingsView.swift",
+        "type": "struct",
+        "imports": [
+          "SwiftUI"
+        ]
+      }
+    ],
+    "Manager": [
+      {
+        "name": "ScreenCaptureManager",
+        "file": "EirosAgent/Managers/ScreenCaptureManager.swift",
+        "type": "class",
+        "imports": [
+          "Foundation",
+          "UIKit",
+          "Combine"
+        ]
+      },
+      {
+        "name": "ScreenshotRecord",
+        "file": "EirosAgent/Managers/ScreenCaptureManager.swift",
+        "type": "struct",
+        "imports": [
+          "Foundation",
+          "UIKit",
+          "Combine"
+        ]
+      },
+      {
+        "name": "VisionManager",
+        "file": "EirosAgent/Managers/VisionManager.swift",
+        "type": "class",
+        "imports": [
+          "Foundation",
+          "Vision",
+          "UIKit",
+          "AVFoundation",
+          "Combine"
+        ]
+      },
+      {
+        "name": "DetectedText",
+        "file": "EirosAgent/Managers/VisionManager.swift",
+        "type": "struct",
+        "imports": [
+          "Foundation",
+          "Vision",
+          "UIKit",
+          "AVFoundation",
+          "Combine"
+        ]
+      },
+      {
+        "name": "DetectedObject",
+        "file": "EirosAgent/Managers/VisionManager.swift",
+        "type": "struct",
+        "imports": [
+          "Foundation",
+          "Vision",
+          "UIKit",
+          "AVFoundation",
+          "Combine"
+        ]
+      },
+      {
+        "name": "UIElement",
+        "file": "EirosAgent/Managers/VisionManager.swift",
+        "type": "struct",
+        "imports": [
+          "Foundation",
+          "Vision",
+          "UIKit",
+          "AVFoundation",
+          "Combine"
+        ]
+      },
+      {
+        "name": "ScreenAnalysisResult",
+        "file": "EirosAgent/Managers/VisionManager.swift",
+        "type": "struct",
+        "imports": [
+          "Foundation",
+          "Vision",
+          "UIKit",
+          "AVFoundation",
+          "Combine"
+        ]
+      },
+      {
+        "name": "EnhancedLLMManager",
+        "file": "EirosAgent/Managers/EnhancedLLMManager.swift",
+        "type": "class",
+        "imports": [
+          "Foundation",
+          "Combine",
+          "UIKit"
+        ]
+      },
+      {
+        "name": "EnhancedChatMessage",
+        "file": "EirosAgent/Managers/EnhancedLLMManager.swift",
+        "type": "struct",
+        "imports": [
+          "Foundation",
+          "Combine",
+          "UIKit"
+        ]
+      },
+      {
+        "name": "MessageAttachment",
+        "file": "EirosAgent/Managers/EnhancedLLMManager.swift",
+        "type": "struct",
+        "imports": [
+          "Foundation",
+          "Combine",
+          "UIKit"
+        ]
+      },
+      {
+        "name": "EnhancedModelInfo",
+        "file": "EirosAgent/Managers/EnhancedLLMManager.swift",
+        "type": "struct",
+        "imports": [
+          "Foundation",
+          "Combine",
+          "UIKit"
+        ]
+      },
+      {
+        "name": "LLMManager",
+        "file": "EirosAgent/Managers/LLMManager.swift",
+        "type": "class",
+        "imports": [
+          "Foundation",
+          "Combine"
+        ]
+      },
+      {
+        "name": "WebViewManager",
+        "file": "EirosAgent/Managers/WebViewManager.swift",
+        "type": "class",
+        "imports": [
+          "Foundation",
+          "WebKit",
+          "Vision",
+          "UIKit",
+          "Combine"
+        ]
+      }
+    ],
+    "Backend": [
+      {
+        "name": "EirosArchitectureAnalyzer",
+        "file": "analyze_architecture.py",
+        "type": "class"
+      },
+      {
+        "name": "EirosAgent",
+        "file": "eiros_agent/core/agent.py",
+        "type": "class"
+      },
+      {
+        "name": "that",
+        "file": "eiros_agent/core/agent.py",
+        "type": "class"
+      },
+      {
+        "name": "EirosAgentError",
+        "file": "eiros_agent/core/exceptions.py",
+        "type": "class"
+      },
+      {
+        "name": "WebAutomationError",
+        "file": "eiros_agent/core/exceptions.py",
+        "type": "class"
+      },
+      {
+        "name": "OCRError",
+        "file": "eiros_agent/core/exceptions.py",
+        "type": "class"
+      },
+      {
+        "name": "VisionError",
+        "file": "eiros_agent/core/exceptions.py",
+        "type": "class"
+      },
+      {
+        "name": "SchedulerError",
+        "file": "eiros_agent/core/exceptions.py",
+        "type": "class"
+      },
+      {
+        "name": "ConfigurationError",
+        "file": "eiros_agent/core/exceptions.py",
+        "type": "class"
+      },
+      {
+        "name": "BrowserError",
+        "file": "eiros_agent/core/exceptions.py",
+        "type": "class"
+      },
+      {
+        "name": "JSInjectionError",
+        "file": "eiros_agent/core/exceptions.py",
+        "type": "class"
+      },
+      {
+        "name": "FormHandlingError",
+        "file": "eiros_agent/core/exceptions.py",
+        "type": "class"
+      },
+      {
+        "name": "NavigationError",
+        "file": "eiros_agent/core/exceptions.py",
+        "type": "class"
+      },
+      {
+        "name": "OCREngineError",
+        "file": "eiros_agent/core/exceptions.py",
+        "type": "class"
+      },
+      {
+        "name": "ImageProcessingError",
+        "file": "eiros_agent/core/exceptions.py",
+        "type": "class"
+      },
+      {
+        "name": "TaskExecutionError",
+        "file": "eiros_agent/core/exceptions.py",
+        "type": "class"
+      },
+      {
+        "name": "MacroError",
+        "file": "eiros_agent/core/exceptions.py",
+        "type": "class"
+      },
+      {
+        "name": "ScreenCaptureError",
+        "file": "eiros_agent/core/exceptions.py",
+        "type": "class"
+      },
+      {
+        "name": "ImageAnalysisError",
+        "file": "eiros_agent/core/exceptions.py",
+        "type": "class"
+      },
+      {
+        "name": "WebAutomationConfig",
+        "file": "eiros_agent/core/config.py",
+        "type": "class"
+      },
+      {
+        "name": "OCRConfig",
+        "file": "eiros_agent/core/config.py",
+        "type": "class"
+      },
+      {
+        "name": "SchedulerConfig",
+        "file": "eiros_agent/core/config.py",
+        "type": "class"
+      },
+      {
+        "name": "VisionConfig",
+        "file": "eiros_agent/core/config.py",
+        "type": "class"
+      },
+      {
+        "name": "LoggingConfig",
+        "file": "eiros_agent/core/config.py",
+        "type": "class"
+      },
+      {
+        "name": "Config",
+        "file": "eiros_agent/core/config.py",
+        "type": "class"
+      },
+      {
+        "name": "TaskManager",
+        "file": "eiros_agent/scheduler/task_manager.py",
+        "type": "class"
+      },
+      {
+        "name": "TaskScheduler",
+        "file": "eiros_agent/scheduler/scheduler.py",
+        "type": "class"
+      },
+      {
+        "name": "BaseTrigger",
+        "file": "eiros_agent/scheduler/triggers.py",
+        "type": "class"
+      },
+      {
+        "name": "for",
+        "file": "eiros_agent/scheduler/triggers.py",
+        "type": "class"
+      },
+      {
+        "name": "TimeTrigger",
+        "file": "eiros_agent/scheduler/triggers.py",
+        "type": "class"
+      },
+      {
+        "name": "EventTrigger",
+        "file": "eiros_agent/scheduler/triggers.py",
+        "type": "class"
+      },
+      {
+        "name": "ConditionTrigger",
+        "file": "eiros_agent/scheduler/triggers.py",
+        "type": "class"
+      },
+      {
+        "name": "TriggerManager",
+        "file": "eiros_agent/scheduler/triggers.py",
+        "type": "class"
+      },
+      {
+        "name": "MacroEngine",
+        "file": "eiros_agent/scheduler/macro_engine.py",
+        "type": "class"
+      },
+      {
+        "name": "TestConfig",
+        "file": "tests/test_core.py",
+        "type": "class"
+      },
+      {
+        "name": "TestEirosAgent",
+        "file": "tests/test_core.py",
+        "type": "class"
+      }
+    ],
+    "Vision": [
+      {
+        "name": "VisionManager",
+        "file": "eiros_agent/vision/manager.py",
+        "type": "class"
+      },
+      {
+        "name": "ScreenCaptureManager",
+        "file": "eiros_agent/vision/screen_capture.py",
+        "type": "class"
+      },
+      {
+        "name": "ObjectDetector",
+        "file": "eiros_agent/vision/object_detector.py",
+        "type": "class"
+      },
+      {
+        "name": "names",
+        "file": "eiros_agent/vision/object_detector.py",
+        "type": "class"
+      },
+      {
+        "name": "ImageAnalyzer",
+        "file": "eiros_agent/vision/image_analyzer.py",
+        "type": "class"
+      }
+    ],
+    "OCR": [
+      {
+        "name": "BaseOCREngine",
+        "file": "eiros_agent/ocr/engines.py",
+        "type": "class"
+      },
+      {
+        "name": "for",
+        "file": "eiros_agent/ocr/engines.py",
+        "type": "class"
+      },
+      {
+        "name": "EasyOCREngine",
+        "file": "eiros_agent/ocr/engines.py",
+        "type": "class"
+      },
+      {
+        "name": "PaddleOCREngine",
+        "file": "eiros_agent/ocr/engines.py",
+        "type": "class"
+      },
+      {
+        "name": "TesseractEngine",
+        "file": "eiros_agent/ocr/engines.py",
+        "type": "class"
+      },
+      {
+        "name": "AdvancedOCRManager",
+        "file": "eiros_agent/ocr/manager.py",
+        "type": "class"
+      },
+      {
+        "name": "ImagePreprocessor",
+        "file": "eiros_agent/ocr/preprocessor.py",
+        "type": "class"
+      },
+      {
+        "name": "TextPostprocessor",
+        "file": "eiros_agent/ocr/postprocessor.py",
+        "type": "class"
+      }
+    ],
+    "Web Automation": [
+      {
+        "name": "FormHandler",
+        "file": "eiros_agent/web_automation/form_handler.py",
+        "type": "class"
+      },
+      {
+        "name": "WebAutomationManager",
+        "file": "eiros_agent/web_automation/manager.py",
+        "type": "class"
+      },
+      {
+        "name": "BrowserController",
+        "file": "eiros_agent/web_automation/browser_controller.py",
+        "type": "class"
+      },
+      {
+        "name": "JSInjector",
+        "file": "eiros_agent/web_automation/js_injector.py",
+        "type": "class"
+      },
+      {
+        "name": "NavigationManager",
+        "file": "eiros_agent/web_automation/navigation.py",
+        "type": "class"
+      },
+      {
+        "name": "TestJSInjector",
+        "file": "tests/test_web_automation.py",
+        "type": "class"
+      },
+      {
+        "name": "TestFormHandler",
+        "file": "tests/test_web_automation.py",
+        "type": "class"
+      },
+      {
+        "name": "TestWebAutomationManager",
+        "file": "tests/test_web_automation.py",
+        "type": "class"
+      }
+    ],
+    "Control Room": [
+      {
+        "name": "EirosAgentWithControlRoom",
+        "file": "eiros_agent/core/control_room_integration.py",
+        "type": "class"
+      },
+      {
+        "name": "ControlRoomManager",
+        "file": "eiros_agent/control_room/backend/control_room_manager.py",
+        "type": "class"
+      },
+      {
+        "name": "ControlRoomAPI",
+        "file": "eiros_agent/control_room/backend/api/rest_api.py",
+        "type": "class"
+      },
+      {
+        "name": "MetricsCollector",
+        "file": "eiros_agent/control_room/backend/monitoring/metrics_collector.py",
+        "type": "class"
+      },
+      {
+        "name": "SystemMonitor",
+        "file": "eiros_agent/control_room/backend/monitoring/system_monitor.py",
+        "type": "class"
+      },
+      {
+        "name": "WebSocketServer",
+        "file": "eiros_agent/control_room/backend/websocket/websocket_server.py",
+        "type": "class"
+      },
+      {
+        "name": "TaskStatus",
+        "file": "eiros_agent/control_room/models/task.py",
+        "type": "class"
+      },
+      {
+        "name": "TaskPriority",
+        "file": "eiros_agent/control_room/models/task.py",
+        "type": "class"
+      },
+      {
+        "name": "class",
+        "file": "eiros_agent/control_room/models/task.py",
+        "type": "class"
+      },
+      {
+        "name": "class",
+        "file": "eiros_agent/control_room/models/user_profile.py",
+        "type": "class"
+      },
+      {
+        "name": "NotificationType",
+        "file": "eiros_agent/control_room/models/notification.py",
+        "type": "class"
+      },
+      {
+        "name": "NotificationSeverity",
+        "file": "eiros_agent/control_room/models/notification.py",
+        "type": "class"
+      },
+      {
+        "name": "class",
+        "file": "eiros_agent/control_room/models/notification.py",
+        "type": "class"
+      },
+      {
+        "name": "MetricType",
+        "file": "eiros_agent/control_room/models/metric.py",
+        "type": "class"
+      },
+      {
+        "name": "MetricUnit",
+        "file": "eiros_agent/control_room/models/metric.py",
+        "type": "class"
+      },
+      {
+        "name": "class",
+        "file": "eiros_agent/control_room/models/metric.py",
+        "type": "class"
+      },
+      {
+        "name": "class",
+        "file": "eiros_agent/control_room/models/metric.py",
+        "type": "class"
+      }
+    ]
+  },
+  "stats": {
+    "Core": {
+      "count": 2,
+      "files": [
+        "EirosAgent/EirosAgentApp.swift",
+        "EirosAgent/ContentView.swift"
+      ]
+    },
+    "Model": {
+      "count": 4,
+      "files": [
+        "EirosAgent/Models/ChatMessage.swift"
+      ]
+    },
+    "View": {
+      "count": 21,
+      "files": [
+        "EirosAgent/Views/ControlRoomView.swift",
+        "EirosAgent/Views/SettingsView.swift",
+        "EirosAgent/Views/EnhancedControlRoomView.swift",
+        "EirosAgent/Views/VisionAnalysisView.swift",
+        "EirosAgent/Views/BrowserView.swift"
+      ]
+    },
+    "Manager": {
+      "count": 13,
+      "files": [
+        "EirosAgent/Managers/EnhancedLLMManager.swift",
+        "EirosAgent/Managers/VisionManager.swift",
+        "EirosAgent/Managers/ScreenCaptureManager.swift",
+        "EirosAgent/Managers/WebViewManager.swift",
+        "EirosAgent/Managers/LLMManager.swift"
+      ]
+    },
+    "Backend": {
+      "count": 36,
+      "files": [
+        "eiros_agent/core/agent.py",
+        "eiros_agent/scheduler/task_manager.py",
+        "eiros_agent/core/exceptions.py",
+        "eiros_agent/core/config.py",
+        "tests/test_core.py",
+        "eiros_agent/scheduler/macro_engine.py",
+        "eiros_agent/scheduler/scheduler.py",
+        "eiros_agent/scheduler/triggers.py",
+        "analyze_architecture.py"
+      ]
+    },
+    "Vision": {
+      "count": 5,
+      "files": [
+        "eiros_agent/vision/manager.py",
+        "eiros_agent/vision/screen_capture.py",
+        "eiros_agent/vision/image_analyzer.py",
+        "eiros_agent/vision/object_detector.py"
+      ]
+    },
+    "OCR": {
+      "count": 8,
+      "files": [
+        "eiros_agent/ocr/manager.py",
+        "eiros_agent/ocr/postprocessor.py",
+        "eiros_agent/ocr/engines.py",
+        "eiros_agent/ocr/preprocessor.py"
+      ]
+    },
+    "Web Automation": {
+      "count": 8,
+      "files": [
+        "eiros_agent/web_automation/navigation.py",
+        "eiros_agent/web_automation/manager.py",
+        "tests/test_web_automation.py",
+        "eiros_agent/web_automation/browser_controller.py",
+        "eiros_agent/web_automation/form_handler.py",
+        "eiros_agent/web_automation/js_injector.py"
+      ]
+    },
+    "Control Room": {
+      "count": 17,
+      "files": [
+        "eiros_agent/control_room/models/metric.py",
+        "eiros_agent/control_room/backend/monitoring/metrics_collector.py",
+        "eiros_agent/control_room/backend/websocket/websocket_server.py",
+        "eiros_agent/control_room/backend/control_room_manager.py",
+        "eiros_agent/core/control_room_integration.py",
+        "eiros_agent/control_room/models/task.py",
+        "eiros_agent/control_room/backend/monitoring/system_monitor.py",
+        "eiros_agent/control_room/backend/api/rest_api.py",
+        "eiros_agent/control_room/models/notification.py",
+        "eiros_agent/control_room/models/user_profile.py"
+      ]
+    }
+  },
+  "issues": [],
+  "swift_files_count": 13,
+  "python_files_count": 54
+}

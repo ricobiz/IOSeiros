@@ -1,0 +1,286 @@
+{
+  "project": "Eiros Agent iOS",
+  "version": "1.0.0",
+  "created_date": "2025-09-22T00:08:09.290992",
+  "test_summary": {
+    "unit_tests": 5,
+    "integration_tests": 4,
+    "ui_tests": 6,
+    "performance_tests": 4,
+    "security_tests": 4
+  },
+  "test_categories": {
+    "unit_tests": [
+      {
+        "component": "LLMManager",
+        "test_name": "test_llm_initialization",
+        "description": "Проверка инициализации LLM менеджера",
+        "test_code": "\nfunc testLLMManagerInitialization() {\n    let manager = LLMManager()\n    XCTAssertNotNil(manager)\n    XCTAssertEqual(manager.isInitialized, false)\n}",
+        "expected_result": "Менеджер создается успешно",
+        "priority": "High"
+      },
+      {
+        "component": "VisionManager",
+        "test_name": "test_image_analysis",
+        "description": "Проверка анализа изображений",
+        "test_code": "\nfunc testImageAnalysis() {\n    let manager = VisionManager()\n    let testImage = UIImage(named: \"test_image\")!\n    \n    let expectation = XCTestExpectation(description: \"Image analysis\")\n    \n    manager.analyzeImage(testImage) { result in\n        XCTAssertNotNil(result)\n        XCTAssertTrue(result.confidence > 0.5)\n        expectation.fulfill()\n    }\n    \n    wait(for: [expectation], timeout: 10.0)\n}",
+        "expected_result": "Изображение анализируется корректно",
+        "priority": "High"
+      },
+      {
+        "component": "WebViewManager",
+        "test_name": "test_javascript_injection",
+        "description": "Проверка внедрения JavaScript",
+        "test_code": "\nfunc testJavaScriptInjection() {\n    let manager = WebViewManager()\n    let testScript = \"document.title\"\n    \n    let expectation = XCTestExpectation(description: \"JS injection\")\n    \n    manager.injectJavaScript(testScript) { result in\n        XCTAssertNotNil(result)\n        expectation.fulfill()\n    }\n    \n    wait(for: [expectation], timeout: 5.0)\n}",
+        "expected_result": "JavaScript выполняется успешно",
+        "priority": "Medium"
+      },
+      {
+        "component": "ScreenCaptureManager",
+        "test_name": "test_screen_capture",
+        "description": "Проверка захвата экрана",
+        "test_code": "\nfunc testScreenCapture() {\n    let manager = ScreenCaptureManager()\n    \n    let expectation = XCTestExpectation(description: \"Screen capture\")\n    \n    manager.captureScreen { image in\n        XCTAssertNotNil(image)\n        XCTAssertTrue(image.size.width > 0)\n        XCTAssertTrue(image.size.height > 0)\n        expectation.fulfill()\n    }\n    \n    wait(for: [expectation], timeout: 3.0)\n}",
+        "expected_result": "Скриншот создается успешно",
+        "priority": "High"
+      },
+      {
+        "component": "ChatMessage",
+        "test_name": "test_message_creation",
+        "description": "Проверка создания сообщений чата",
+        "test_code": "\nfunc testChatMessageCreation() {\n    let message = ChatMessage(\n        id: UUID(),\n        content: \"Test message\",\n        isUser: true,\n        timestamp: Date()\n    )\n    \n    XCTAssertEqual(message.content, \"Test message\")\n    XCTAssertTrue(message.isUser)\n    XCTAssertNotNil(message.timestamp)\n}",
+        "expected_result": "Сообщение создается с корректными данными",
+        "priority": "Low"
+      }
+    ],
+    "integration_tests": [
+      {
+        "test_name": "test_llm_vision_integration",
+        "description": "Интеграция LLM и Vision компонентов",
+        "components": [
+          "LLMManager",
+          "VisionManager"
+        ],
+        "scenario": "\n1. Захватить скриншот экрана\n2. Передать изображение в VisionManager для анализа\n3. Отправить результаты анализа в LLMManager\n4. Получить текстовое описание от LLM\n5. Проверить корректность результата\n",
+        "expected_result": "LLM корректно обрабатывает результаты анализа изображений",
+        "priority": "High"
+      },
+      {
+        "test_name": "test_web_automation_flow",
+        "description": "Полный цикл веб-автоматизации",
+        "components": [
+          "WebViewManager",
+          "VisionManager",
+          "LLMManager"
+        ],
+        "scenario": "\n1. Загрузить веб-страницу в WebView\n2. Сделать скриншот страницы\n3. Проанализировать элементы через Vision\n4. Получить инструкции от LLM\n5. Выполнить автоматизированные действия\n6. Проверить результат\n",
+        "expected_result": "Автоматизация веб-страницы выполняется успешно",
+        "priority": "High"
+      },
+      {
+        "test_name": "test_ai_roles_switching",
+        "description": "Переключение между ролями ИИ",
+        "components": [
+          "AIRoleManager",
+          "LLMManager"
+        ],
+        "scenario": "\n1. Инициализировать роль Планировщика\n2. Создать план задач\n3. Переключиться на роль Декомпозитора\n4. Разбить задачи на подзадачи\n5. Переключиться на роль Оркестратора\n6. Координировать выполнение\n",
+        "expected_result": "Роли переключаются корректно и выполняют свои функции",
+        "priority": "Medium"
+      },
+      {
+        "test_name": "test_control_room_communication",
+        "description": "Связь с Control Room бэкендом",
+        "components": [
+          "ControlRoomManager",
+          "WebSocket"
+        ],
+        "scenario": "\n1. Установить WebSocket соединение\n2. Отправить команду в Control Room\n3. Получить ответ от бэкенда\n4. Обработать результат в iOS приложении\n5. Обновить UI\n",
+        "expected_result": "Связь с бэкендом работает стабильно",
+        "priority": "High"
+      }
+    ],
+    "ui_tests": [
+      {
+        "screen": "MainScreen",
+        "test_name": "test_main_screen_navigation",
+        "description": "Навигация с главного экрана",
+        "steps": [
+          "Запустить приложение",
+          "Проверить отображение главного экрана",
+          "Нажать кнопку 'Открыть браузер'",
+          "Проверить переход на экран браузера",
+          "Вернуться на главный экран",
+          "Нажать кнопку 'Роли ИИ'",
+          "Проверить переход на экран ролей"
+        ],
+        "expected_result": "Навигация работает корректно",
+        "priority": "High"
+      },
+      {
+        "screen": "BrowserView",
+        "test_name": "test_browser_functionality",
+        "description": "Функциональность браузера",
+        "steps": [
+          "Открыть экран браузера",
+          "Ввести URL в адресную строку",
+          "Нажать кнопку перехода",
+          "Проверить загрузку страницы",
+          "Использовать кнопки навигации (назад/вперед)",
+          "Проверить работу кнопки обновления"
+        ],
+        "expected_result": "Браузер загружает страницы и навигация работает",
+        "priority": "High"
+      },
+      {
+        "screen": "AIRolesView",
+        "test_name": "test_ai_roles_interface",
+        "description": "Интерфейс ролей ИИ",
+        "steps": [
+          "Открыть экран ролей ИИ",
+          "Проверить отображение всех ролей",
+          "Выбрать роль Планировщика",
+          "Проверить активацию роли",
+          "Переключиться на роль Декомпозитора",
+          "Проверить смену активной роли"
+        ],
+        "expected_result": "Роли отображаются и переключаются корректно",
+        "priority": "Medium"
+      },
+      {
+        "screen": "AutomationView",
+        "test_name": "test_automation_controls",
+        "description": "Элементы управления автоматизацией",
+        "steps": [
+          "Открыть экран автоматизации",
+          "Нажать кнопку 'Новый скрипт'",
+          "Проверить открытие редактора",
+          "Создать простой скрипт",
+          "Сохранить скрипт",
+          "Запустить выполнение",
+          "Проверить статус выполнения"
+        ],
+        "expected_result": "Создание и выполнение скриптов работает",
+        "priority": "High"
+      },
+      {
+        "screen": "VisionAnalysisView",
+        "test_name": "test_vision_analysis_ui",
+        "description": "Интерфейс анализа изображений",
+        "steps": [
+          "Открыть экран анализа",
+          "Нажать кнопку 'Снимок'",
+          "Проверить захват изображения",
+          "Дождаться результатов анализа",
+          "Проверить отображение результатов",
+          "Нажать кнопку 'Автоматизировать'"
+        ],
+        "expected_result": "Анализ изображений и отображение результатов работает",
+        "priority": "High"
+      },
+      {
+        "screen": "SettingsView",
+        "test_name": "test_settings_configuration",
+        "description": "Настройки приложения",
+        "steps": [
+          "Открыть экран настроек",
+          "Проверить отображение всех секций",
+          "Открыть настройки ИИ",
+          "Изменить модель LLM",
+          "Сохранить изменения",
+          "Проверить применение настроек"
+        ],
+        "expected_result": "Настройки сохраняются и применяются",
+        "priority": "Medium"
+      }
+    ],
+    "performance_tests": [
+      {
+        "test_name": "test_llm_response_time",
+        "description": "Время ответа LLM",
+        "metric": "Response time < 5 seconds",
+        "test_scenario": "Отправить запрос к LLM и измерить время ответа",
+        "priority": "High"
+      },
+      {
+        "test_name": "test_image_analysis_performance",
+        "description": "Производительность анализа изображений",
+        "metric": "Analysis time < 3 seconds for 1080p image",
+        "test_scenario": "Проанализировать изображение высокого разрешения",
+        "priority": "Medium"
+      },
+      {
+        "test_name": "test_memory_usage",
+        "description": "Использование памяти",
+        "metric": "Memory usage < 200MB during normal operation",
+        "test_scenario": "Мониторинг памяти во время работы приложения",
+        "priority": "Medium"
+      },
+      {
+        "test_name": "test_battery_consumption",
+        "description": "Потребление батареи",
+        "metric": "Battery drain < 10% per hour of active use",
+        "test_scenario": "Измерение расхода батареи при активном использовании",
+        "priority": "Low"
+      }
+    ],
+    "security_tests": [
+      {
+        "test_name": "test_api_key_security",
+        "description": "Безопасность API ключей",
+        "test_scenario": "Проверить, что API ключи не хранятся в открытом виде",
+        "priority": "High"
+      },
+      {
+        "test_name": "test_data_encryption",
+        "description": "Шифрование данных",
+        "test_scenario": "Проверить шифрование чувствительных данных",
+        "priority": "High"
+      },
+      {
+        "test_name": "test_network_security",
+        "description": "Безопасность сетевых соединений",
+        "test_scenario": "Проверить использование HTTPS для всех соединений",
+        "priority": "Medium"
+      },
+      {
+        "test_name": "test_biometric_authentication",
+        "description": "Биометрическая аутентификация",
+        "test_scenario": "Проверить работу Touch ID/Face ID",
+        "priority": "Medium"
+      }
+    ]
+  },
+  "test_environment": {
+    "ios_versions": [
+      "iOS 15.0+",
+      "iOS 16.0+",
+      "iOS 17.0+"
+    ],
+    "devices": [
+      "iPhone 12",
+      "iPhone 13",
+      "iPhone 14",
+      "iPhone 15",
+      "iPad"
+    ],
+    "simulators": [
+      "iPhone 14 Simulator",
+      "iPad Pro Simulator"
+    ]
+  },
+  "test_data": {
+    "test_images": [
+      "test_screenshot.png",
+      "test_webpage.png",
+      "test_form.png"
+    ],
+    "test_urls": [
+      "https://example.com",
+      "https://httpbin.org/forms/post"
+    ],
+    "test_scripts": [
+      "login_automation.js",
+      "form_filling.js"
+    ]
+  }
+}

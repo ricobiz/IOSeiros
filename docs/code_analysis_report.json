@@ -1,0 +1,1793 @@
+{
+  "summary": {
+    "total_files_analyzed": 70,
+    "total_issues": 81,
+    "critical_issues": 0,
+    "high_issues": 5,
+    "medium_issues": 4,
+    "low_issues": 72
+  },
+  "metrics": {
+    "lines_of_code": 14057,
+    "functions": 701,
+    "classes": 83,
+    "complexity": 2335,
+    "comments": 880
+  },
+  "issues_by_type": {
+    "Error Handling": 1,
+    "Security": 5,
+    "Code Quality": 37,
+    "Code Style": 35,
+    "Force Unwrapping": 3
+  },
+  "issues_by_severity": {
+    "Medium": 4,
+    "High": 5,
+    "Low": 72,
+    "Critical": 0
+  },
+  "detailed_issues": [
+    {
+      "type": "Error Handling",
+      "severity": "Medium",
+      "message": "Использование голого except может скрывать ошибки",
+      "file": "code_analysis.py"
+    },
+    {
+      "type": "Security",
+      "severity": "High",
+      "message": "Использование eval() может быть небезопасным",
+      "file": "code_analysis.py"
+    },
+    {
+      "type": "Security",
+      "severity": "High",
+      "message": "Использование exec() может быть небезопасным",
+      "file": "code_analysis.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: networkx",
+      "file": "analyze_architecture.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: yaml",
+      "file": "analyze_architecture.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 67 превышает 120 символов (124 символов)",
+      "file": "eiros_agent/vision/manager.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 107 превышает 120 символов (146 символов)",
+      "file": "eiros_agent/vision/manager.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 149 превышает 120 символов (145 символов)",
+      "file": "eiros_agent/vision/manager.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 172 превышает 120 символов (181 символов)",
+      "file": "eiros_agent/vision/manager.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 201 превышает 120 символов (227 символов)",
+      "file": "eiros_agent/vision/manager.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 230 превышает 120 символов (153 символов)",
+      "file": "eiros_agent/vision/manager.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: numpy",
+      "file": "eiros_agent/vision/manager.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: asyncio",
+      "file": "eiros_agent/vision/screen_capture.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: numpy",
+      "file": "eiros_agent/vision/screen_capture.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 73 превышает 120 символов (124 символов)",
+      "file": "eiros_agent/vision/object_detector.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 93 превышает 120 символов (134 символов)",
+      "file": "eiros_agent/vision/object_detector.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 262 превышает 120 символов (126 символов)",
+      "file": "eiros_agent/vision/object_detector.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: asyncio",
+      "file": "eiros_agent/vision/object_detector.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: numpy",
+      "file": "eiros_agent/vision/object_detector.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 281 превышает 120 символов (133 символов)",
+      "file": "eiros_agent/vision/image_analyzer.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: asyncio",
+      "file": "eiros_agent/vision/image_analyzer.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 32 превышает 120 символов (132 символов)",
+      "file": "eiros_agent/ocr/engines.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 81 превышает 120 символов (132 символов)",
+      "file": "eiros_agent/ocr/engines.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 177 превышает 120 символов (132 символов)",
+      "file": "eiros_agent/ocr/engines.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 262 превышает 120 символов (132 символов)",
+      "file": "eiros_agent/ocr/engines.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: Path",
+      "file": "eiros_agent/ocr/engines.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 81 превышает 120 символов (143 символов)",
+      "file": "eiros_agent/ocr/manager.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 115 превышает 120 символов (121 символов)",
+      "file": "eiros_agent/ocr/manager.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 137 превышает 120 символов (162 символов)",
+      "file": "eiros_agent/ocr/manager.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 164 превышает 120 символов (188 символов)",
+      "file": "eiros_agent/ocr/manager.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 190 превышает 120 символов (146 символов)",
+      "file": "eiros_agent/ocr/manager.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 225 превышает 120 символов (141 символов)",
+      "file": "eiros_agent/ocr/manager.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 283 превышает 120 символов (123 символов)",
+      "file": "eiros_agent/ocr/manager.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 374 превышает 120 символов (123 символов)",
+      "file": "eiros_agent/ocr/manager.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: numpy",
+      "file": "eiros_agent/ocr/manager.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 35 превышает 120 символов (138 символов)",
+      "file": "eiros_agent/ocr/preprocessor.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 57 превышает 120 символов (125 символов)",
+      "file": "eiros_agent/ocr/preprocessor.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 287 превышает 120 символов (126 символов)",
+      "file": "eiros_agent/ocr/preprocessor.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: asyncio",
+      "file": "eiros_agent/ocr/preprocessor.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: numpy",
+      "file": "eiros_agent/ocr/preprocessor.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 258 превышает 120 символов (122 символов)",
+      "file": "eiros_agent/ocr/postprocessor.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 52 превышает 120 символов (129 символов)",
+      "file": "eiros_agent/web_automation/form_handler.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 106 превышает 120 символов (133 символов)",
+      "file": "eiros_agent/web_automation/form_handler.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: asyncio",
+      "file": "eiros_agent/web_automation/manager.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: asyncio",
+      "file": "eiros_agent/web_automation/browser_controller.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 162 превышает 120 символов (128 символов)",
+      "file": "eiros_agent/web_automation/navigation.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 197 превышает 120 символов (159 символов)",
+      "file": "eiros_agent/web_automation/navigation.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 238 превышает 120 символов (135 символов)",
+      "file": "eiros_agent/web_automation/navigation.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: urljoin",
+      "file": "eiros_agent/web_automation/navigation.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: numpy",
+      "file": "eiros_agent/utils/image_utils.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: os",
+      "file": "eiros_agent/utils/file_utils.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: asyncio",
+      "file": "eiros_agent/core/agent.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: Path",
+      "file": "eiros_agent/core/agent.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: asyncio",
+      "file": "eiros_agent/core/control_room_integration.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: asyncio",
+      "file": "eiros_agent/control_room/backend/api/rest_api.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 165 превышает 120 символов (133 символов)",
+      "file": "eiros_agent/control_room/backend/monitoring/metrics_collector.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: asyncio",
+      "file": "eiros_agent/control_room/backend/monitoring/system_monitor.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 361 превышает 120 символов (124 символов)",
+      "file": "eiros_agent/control_room/backend/websocket/websocket_server.py"
+    },
+    {
+      "type": "Security",
+      "severity": "High",
+      "message": "Использование eval() может быть небезопасным",
+      "file": "eiros_agent/scheduler/task_manager.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 159 превышает 120 символов (126 символов)",
+      "file": "eiros_agent/scheduler/scheduler.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: TimeTrigger",
+      "file": "eiros_agent/scheduler/scheduler.py"
+    },
+    {
+      "type": "Security",
+      "severity": "High",
+      "message": "Использование eval() может быть небезопасным",
+      "file": "eiros_agent/scheduler/triggers.py"
+    },
+    {
+      "type": "Code Style",
+      "severity": "Low",
+      "message": "Строка 61 превышает 120 символов (126 символов)",
+      "file": "eiros_agent/scheduler/macro_engine.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: yaml",
+      "file": "eiros_agent/scheduler/macro_engine.py"
+    },
+    {
+      "type": "Security",
+      "severity": "High",
+      "message": "Использование eval() может быть небезопасным",
+      "file": "eiros_agent/scheduler/macro_engine.py"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: WebKit",
+      "file": "EirosAgent/Views/BrowserView.swift"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Функция содержит 140 строк (рекомендуется < 50)",
+      "file": "EirosAgent/Managers/ScreenCaptureManager.swift"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: Combine",
+      "file": "EirosAgent/Managers/ScreenCaptureManager.swift"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Функция содержит 253 строк (рекомендуется < 50)",
+      "file": "EirosAgent/Managers/VisionManager.swift"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: AVFoundation",
+      "file": "EirosAgent/Managers/VisionManager.swift"
+    },
+    {
+      "type": "Force Unwrapping",
+      "severity": "Medium",
+      "message": "Найдено 6 принудительных извлечений опционалов",
+      "details": [
+        "Hello!",
+        "screen!",
+        "explore!",
+        "Hello!",
+        "assistant!"
+      ],
+      "file": "EirosAgent/Managers/EnhancedLLMManager.swift"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Функция содержит 392 строк (рекомендуется < 50)",
+      "file": "EirosAgent/Managers/EnhancedLLMManager.swift"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: Combine",
+      "file": "EirosAgent/Managers/EnhancedLLMManager.swift"
+    },
+    {
+      "type": "Force Unwrapping",
+      "severity": "Medium",
+      "message": "Найдено 3 принудительных извлечений опционалов",
+      "details": [
+        "Hello!",
+        "Hello!",
+        "tasks!"
+      ],
+      "file": "EirosAgent/Managers/LLMManager.swift"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Функция содержит 124 строк (рекомендуется < 50)",
+      "file": "EirosAgent/Managers/LLMManager.swift"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: Combine",
+      "file": "EirosAgent/Managers/LLMManager.swift"
+    },
+    {
+      "type": "Force Unwrapping",
+      "severity": "Medium",
+      "message": "Найдено 3 принудительных извлечений опционалов",
+      "details": [
+        "WKNavigation!",
+        "WKNavigation!",
+        "WKNavigation!"
+      ],
+      "file": "EirosAgent/Managers/WebViewManager.swift"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Функция содержит 206 строк (рекомендуется < 50)",
+      "file": "EirosAgent/Managers/WebViewManager.swift"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: WebKit",
+      "file": "EirosAgent/Managers/WebViewManager.swift"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: Combine",
+      "file": "EirosAgent/Managers/WebViewManager.swift"
+    },
+    {
+      "type": "Code Quality",
+      "severity": "Low",
+      "message": "Возможно неиспользуемый импорт: Path",
+      "file": "examples/basic_usage.py"
+    }
+  ],
+  "file_analysis": {
+    "generate_ui_mockups.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 312,
+        "functions": 12,
+        "classes": 1,
+        "complexity": 7,
+        "comments": 41
+      }
+    },
+    "setup.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 62,
+        "functions": 0,
+        "classes": 0,
+        "complexity": 5,
+        "comments": 1
+      }
+    },
+    "code_analysis.py": {
+      "issues": [
+        {
+          "type": "Error Handling",
+          "severity": "Medium",
+          "message": "Использование голого except может скрывать ошибки",
+          "file": "code_analysis.py"
+        },
+        {
+          "type": "Security",
+          "severity": "High",
+          "message": "Использование eval() может быть небезопасным",
+          "file": "code_analysis.py"
+        },
+        {
+          "type": "Security",
+          "severity": "High",
+          "message": "Использование exec() может быть небезопасным",
+          "file": "code_analysis.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 354,
+        "functions": 9,
+        "classes": 1,
+        "complexity": 75,
+        "comments": 35
+      }
+    },
+    "analyze_architecture.py": {
+      "issues": [
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: networkx",
+          "file": "analyze_architecture.py"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: yaml",
+          "file": "analyze_architecture.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 238,
+        "functions": 7,
+        "classes": 1,
+        "complexity": 39,
+        "comments": 28
+      }
+    },
+    "generate_test_scenarios.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 454,
+        "functions": 9,
+        "classes": 1,
+        "complexity": 11,
+        "comments": 19
+      }
+    },
+    "eiros_agent/__init__.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 23,
+        "functions": 0,
+        "classes": 0,
+        "complexity": 2,
+        "comments": 0
+      }
+    },
+    "eiros_agent/vision/manager.py": {
+      "issues": [
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 67 превышает 120 символов (124 символов)",
+          "file": "eiros_agent/vision/manager.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 107 превышает 120 символов (146 символов)",
+          "file": "eiros_agent/vision/manager.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 149 превышает 120 символов (145 символов)",
+          "file": "eiros_agent/vision/manager.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 172 превышает 120 символов (181 символов)",
+          "file": "eiros_agent/vision/manager.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 201 превышает 120 символов (227 символов)",
+          "file": "eiros_agent/vision/manager.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 230 превышает 120 символов (153 символов)",
+          "file": "eiros_agent/vision/manager.py"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: numpy",
+          "file": "eiros_agent/vision/manager.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 280,
+        "functions": 14,
+        "classes": 1,
+        "complexity": 74,
+        "comments": 14
+      }
+    },
+    "eiros_agent/vision/screen_capture.py": {
+      "issues": [
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: asyncio",
+          "file": "eiros_agent/vision/screen_capture.py"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: numpy",
+          "file": "eiros_agent/vision/screen_capture.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 338,
+        "functions": 24,
+        "classes": 1,
+        "complexity": 78,
+        "comments": 20
+      }
+    },
+    "eiros_agent/vision/__init__.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 11,
+        "functions": 0,
+        "classes": 0,
+        "complexity": 0,
+        "comments": 0
+      }
+    },
+    "eiros_agent/vision/object_detector.py": {
+      "issues": [
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 73 превышает 120 символов (124 символов)",
+          "file": "eiros_agent/vision/object_detector.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 93 превышает 120 символов (134 символов)",
+          "file": "eiros_agent/vision/object_detector.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 262 превышает 120 символов (126 символов)",
+          "file": "eiros_agent/vision/object_detector.py"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: asyncio",
+          "file": "eiros_agent/vision/object_detector.py"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: numpy",
+          "file": "eiros_agent/vision/object_detector.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 389,
+        "functions": 13,
+        "classes": 2,
+        "complexity": 80,
+        "comments": 45
+      }
+    },
+    "eiros_agent/vision/image_analyzer.py": {
+      "issues": [
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 281 превышает 120 символов (133 символов)",
+          "file": "eiros_agent/vision/image_analyzer.py"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: asyncio",
+          "file": "eiros_agent/vision/image_analyzer.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 443,
+        "functions": 17,
+        "classes": 1,
+        "complexity": 99,
+        "comments": 64
+      }
+    },
+    "eiros_agent/ocr/engines.py": {
+      "issues": [
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 32 превышает 120 символов (132 символов)",
+          "file": "eiros_agent/ocr/engines.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 81 превышает 120 символов (132 символов)",
+          "file": "eiros_agent/ocr/engines.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 177 превышает 120 символов (132 символов)",
+          "file": "eiros_agent/ocr/engines.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 262 превышает 120 символов (132 символов)",
+          "file": "eiros_agent/ocr/engines.py"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: Path",
+          "file": "eiros_agent/ocr/engines.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 266,
+        "functions": 14,
+        "classes": 5,
+        "complexity": 44,
+        "comments": 15
+      }
+    },
+    "eiros_agent/ocr/manager.py": {
+      "issues": [
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 81 превышает 120 символов (143 символов)",
+          "file": "eiros_agent/ocr/manager.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 115 превышает 120 символов (121 символов)",
+          "file": "eiros_agent/ocr/manager.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 137 превышает 120 символов (162 символов)",
+          "file": "eiros_agent/ocr/manager.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 164 превышает 120 символов (188 символов)",
+          "file": "eiros_agent/ocr/manager.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 190 превышает 120 символов (146 символов)",
+          "file": "eiros_agent/ocr/manager.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 225 превышает 120 символов (141 символов)",
+          "file": "eiros_agent/ocr/manager.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 283 превышает 120 символов (123 символов)",
+          "file": "eiros_agent/ocr/manager.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 374 превышает 120 символов (123 символов)",
+          "file": "eiros_agent/ocr/manager.py"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: numpy",
+          "file": "eiros_agent/ocr/manager.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 355,
+        "functions": 16,
+        "classes": 1,
+        "complexity": 79,
+        "comments": 32
+      }
+    },
+    "eiros_agent/ocr/preprocessor.py": {
+      "issues": [
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 35 превышает 120 символов (138 символов)",
+          "file": "eiros_agent/ocr/preprocessor.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 57 превышает 120 символов (125 символов)",
+          "file": "eiros_agent/ocr/preprocessor.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 287 превышает 120 символов (126 символов)",
+          "file": "eiros_agent/ocr/preprocessor.py"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: asyncio",
+          "file": "eiros_agent/ocr/preprocessor.py"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: numpy",
+          "file": "eiros_agent/ocr/preprocessor.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 309,
+        "functions": 10,
+        "classes": 1,
+        "complexity": 64,
+        "comments": 46
+      }
+    },
+    "eiros_agent/ocr/postprocessor.py": {
+      "issues": [
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 258 превышает 120 символов (122 символов)",
+          "file": "eiros_agent/ocr/postprocessor.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 258,
+        "functions": 12,
+        "classes": 1,
+        "complexity": 59,
+        "comments": 60
+      }
+    },
+    "eiros_agent/ocr/__init__.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 13,
+        "functions": 0,
+        "classes": 0,
+        "complexity": 0,
+        "comments": 0
+      }
+    },
+    "eiros_agent/web_automation/form_handler.py": {
+      "issues": [
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 52 превышает 120 символов (129 символов)",
+          "file": "eiros_agent/web_automation/form_handler.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 106 превышает 120 символов (133 символов)",
+          "file": "eiros_agent/web_automation/form_handler.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 293,
+        "functions": 23,
+        "classes": 1,
+        "complexity": 53,
+        "comments": 12
+      }
+    },
+    "eiros_agent/web_automation/manager.py": {
+      "issues": [
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: asyncio",
+          "file": "eiros_agent/web_automation/manager.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 199,
+        "functions": 8,
+        "classes": 1,
+        "complexity": 37,
+        "comments": 7
+      }
+    },
+    "eiros_agent/web_automation/browser_controller.py": {
+      "issues": [
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: asyncio",
+          "file": "eiros_agent/web_automation/browser_controller.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 113,
+        "functions": 10,
+        "classes": 1,
+        "complexity": 30,
+        "comments": 2
+      }
+    },
+    "eiros_agent/web_automation/js_injector.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 251,
+        "functions": 11,
+        "classes": 1,
+        "complexity": 43,
+        "comments": 9
+      }
+    },
+    "eiros_agent/web_automation/__init__.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 13,
+        "functions": 0,
+        "classes": 0,
+        "complexity": 0,
+        "comments": 0
+      }
+    },
+    "eiros_agent/web_automation/navigation.py": {
+      "issues": [
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 162 превышает 120 символов (128 символов)",
+          "file": "eiros_agent/web_automation/navigation.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 197 превышает 120 символов (159 символов)",
+          "file": "eiros_agent/web_automation/navigation.py"
+        },
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 238 превышает 120 символов (135 символов)",
+          "file": "eiros_agent/web_automation/navigation.py"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: urljoin",
+          "file": "eiros_agent/web_automation/navigation.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 251,
+        "functions": 15,
+        "classes": 1,
+        "complexity": 48,
+        "comments": 17
+      }
+    },
+    "eiros_agent/utils/image_utils.py": {
+      "issues": [
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: numpy",
+          "file": "eiros_agent/utils/image_utils.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 287,
+        "functions": 13,
+        "classes": 0,
+        "complexity": 51,
+        "comments": 4
+      }
+    },
+    "eiros_agent/utils/config_loader.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 111,
+        "functions": 5,
+        "classes": 0,
+        "complexity": 25,
+        "comments": 1
+      }
+    },
+    "eiros_agent/utils/__init__.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 13,
+        "functions": 0,
+        "classes": 0,
+        "complexity": 0,
+        "comments": 0
+      }
+    },
+    "eiros_agent/utils/file_utils.py": {
+      "issues": [
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: os",
+          "file": "eiros_agent/utils/file_utils.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 223,
+        "functions": 10,
+        "classes": 0,
+        "complexity": 49,
+        "comments": 6
+      }
+    },
+    "eiros_agent/utils/logger.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 56,
+        "functions": 2,
+        "classes": 0,
+        "complexity": 4,
+        "comments": 4
+      }
+    },
+    "eiros_agent/core/agent.py": {
+      "issues": [
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: asyncio",
+          "file": "eiros_agent/core/agent.py"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: Path",
+          "file": "eiros_agent/core/agent.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 103,
+        "functions": 7,
+        "classes": 2,
+        "complexity": 21,
+        "comments": 8
+      }
+    },
+    "eiros_agent/core/exceptions.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 51,
+        "functions": 0,
+        "classes": 16,
+        "complexity": 2,
+        "comments": 0
+      }
+    },
+    "eiros_agent/core/config.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 104,
+        "functions": 5,
+        "classes": 6,
+        "complexity": 10,
+        "comments": 4
+      }
+    },
+    "eiros_agent/core/control_room_integration.py": {
+      "issues": [
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: asyncio",
+          "file": "eiros_agent/core/control_room_integration.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 270,
+        "functions": 15,
+        "classes": 1,
+        "complexity": 66,
+        "comments": 29
+      }
+    },
+    "eiros_agent/core/__init__.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 5,
+        "functions": 0,
+        "classes": 0,
+        "complexity": 0,
+        "comments": 0
+      }
+    },
+    "eiros_agent/control_room/__init__.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 13,
+        "functions": 0,
+        "classes": 0,
+        "complexity": 0,
+        "comments": 0
+      }
+    },
+    "eiros_agent/control_room/backend/control_room_manager.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 329,
+        "functions": 21,
+        "classes": 1,
+        "complexity": 62,
+        "comments": 30
+      }
+    },
+    "eiros_agent/control_room/backend/__init__.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 3,
+        "functions": 0,
+        "classes": 0,
+        "complexity": 0,
+        "comments": 0
+      }
+    },
+    "eiros_agent/control_room/backend/api/rest_api.py": {
+      "issues": [
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: asyncio",
+          "file": "eiros_agent/control_room/backend/api/rest_api.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 545,
+        "functions": 35,
+        "classes": 1,
+        "complexity": 87,
+        "comments": 36
+      }
+    },
+    "eiros_agent/control_room/backend/api/__init__.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 3,
+        "functions": 0,
+        "classes": 0,
+        "complexity": 1,
+        "comments": 0
+      }
+    },
+    "eiros_agent/control_room/backend/monitoring/metrics_collector.py": {
+      "issues": [
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 165 превышает 120 символов (133 символов)",
+          "file": "eiros_agent/control_room/backend/monitoring/metrics_collector.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 414,
+        "functions": 30,
+        "classes": 1,
+        "complexity": 120,
+        "comments": 35
+      }
+    },
+    "eiros_agent/control_room/backend/monitoring/system_monitor.py": {
+      "issues": [
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: asyncio",
+          "file": "eiros_agent/control_room/backend/monitoring/system_monitor.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 399,
+        "functions": 15,
+        "classes": 1,
+        "complexity": 100,
+        "comments": 28
+      }
+    },
+    "eiros_agent/control_room/backend/monitoring/__init__.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 3,
+        "functions": 0,
+        "classes": 0,
+        "complexity": 1,
+        "comments": 0
+      }
+    },
+    "eiros_agent/control_room/backend/websocket/websocket_server.py": {
+      "issues": [
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 361 превышает 120 символов (124 символов)",
+          "file": "eiros_agent/control_room/backend/websocket/websocket_server.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 369,
+        "functions": 21,
+        "classes": 1,
+        "complexity": 72,
+        "comments": 36
+      }
+    },
+    "eiros_agent/control_room/backend/websocket/__init__.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 3,
+        "functions": 0,
+        "classes": 0,
+        "complexity": 1,
+        "comments": 0
+      }
+    },
+    "eiros_agent/control_room/models/task.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 240,
+        "functions": 26,
+        "classes": 3,
+        "complexity": 29,
+        "comments": 4
+      }
+    },
+    "eiros_agent/control_room/models/user_profile.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 142,
+        "functions": 15,
+        "classes": 1,
+        "complexity": 18,
+        "comments": 5
+      }
+    },
+    "eiros_agent/control_room/models/notification.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 194,
+        "functions": 19,
+        "classes": 3,
+        "complexity": 15,
+        "comments": 6
+      }
+    },
+    "eiros_agent/control_room/models/metric.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 266,
+        "functions": 35,
+        "classes": 4,
+        "complexity": 50,
+        "comments": 5
+      }
+    },
+    "eiros_agent/control_room/models/__init__.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 13,
+        "functions": 0,
+        "classes": 0,
+        "complexity": 1,
+        "comments": 0
+      }
+    },
+    "eiros_agent/scheduler/task_manager.py": {
+      "issues": [
+        {
+          "type": "Security",
+          "severity": "High",
+          "message": "Использование eval() может быть небезопасным",
+          "file": "eiros_agent/scheduler/task_manager.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 321,
+        "functions": 15,
+        "classes": 1,
+        "complexity": 76,
+        "comments": 17
+      }
+    },
+    "eiros_agent/scheduler/scheduler.py": {
+      "issues": [
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 159 превышает 120 символов (126 символов)",
+          "file": "eiros_agent/scheduler/scheduler.py"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: TimeTrigger",
+          "file": "eiros_agent/scheduler/scheduler.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 306,
+        "functions": 16,
+        "classes": 1,
+        "complexity": 74,
+        "comments": 28
+      }
+    },
+    "eiros_agent/scheduler/triggers.py": {
+      "issues": [
+        {
+          "type": "Security",
+          "severity": "High",
+          "message": "Использование eval() может быть небезопасным",
+          "file": "eiros_agent/scheduler/triggers.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 367,
+        "functions": 31,
+        "classes": 6,
+        "complexity": 110,
+        "comments": 21
+      }
+    },
+    "eiros_agent/scheduler/macro_engine.py": {
+      "issues": [
+        {
+          "type": "Code Style",
+          "severity": "Low",
+          "message": "Строка 61 превышает 120 символов (126 символов)",
+          "file": "eiros_agent/scheduler/macro_engine.py"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: yaml",
+          "file": "eiros_agent/scheduler/macro_engine.py"
+        },
+        {
+          "type": "Security",
+          "severity": "High",
+          "message": "Использование eval() может быть небезопасным",
+          "file": "eiros_agent/scheduler/macro_engine.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 266,
+        "functions": 17,
+        "classes": 1,
+        "complexity": 58,
+        "comments": 25
+      }
+    },
+    "eiros_agent/scheduler/__init__.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 13,
+        "functions": 0,
+        "classes": 0,
+        "complexity": 0,
+        "comments": 0
+      }
+    },
+    "EirosAgent/ContentView.swift": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 41,
+        "functions": 0,
+        "classes": 0,
+        "complexity": 0,
+        "comments": 1
+      }
+    },
+    "EirosAgent/EirosAgentApp.swift": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 37,
+        "functions": 2,
+        "classes": 0,
+        "complexity": 0,
+        "comments": 1
+      }
+    },
+    "EirosAgent/Models/ChatMessage.swift": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 49,
+        "functions": 0,
+        "classes": 0,
+        "complexity": 0,
+        "comments": 1
+      }
+    },
+    "EirosAgent/Views/ControlRoomView.swift": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 118,
+        "functions": 1,
+        "classes": 0,
+        "complexity": 4,
+        "comments": 1
+      }
+    },
+    "EirosAgent/Views/VisionAnalysisView.swift": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 358,
+        "functions": 9,
+        "classes": 1,
+        "complexity": 23,
+        "comments": 1
+      }
+    },
+    "EirosAgent/Views/BrowserView.swift": {
+      "issues": [
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: WebKit",
+          "file": "EirosAgent/Views/BrowserView.swift"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 111,
+        "functions": 5,
+        "classes": 0,
+        "complexity": 4,
+        "comments": 1
+      }
+    },
+    "EirosAgent/Views/EnhancedControlRoomView.swift": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 436,
+        "functions": 4,
+        "classes": 0,
+        "complexity": 35,
+        "comments": 1
+      }
+    },
+    "EirosAgent/Views/SettingsView.swift": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 147,
+        "functions": 1,
+        "classes": 0,
+        "complexity": 1,
+        "comments": 1
+      }
+    },
+    "EirosAgent/Managers/ScreenCaptureManager.swift": {
+      "issues": [
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Функция содержит 140 строк (рекомендуется < 50)",
+          "file": "EirosAgent/Managers/ScreenCaptureManager.swift"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: Combine",
+          "file": "EirosAgent/Managers/ScreenCaptureManager.swift"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 148,
+        "functions": 13,
+        "classes": 1,
+        "complexity": 8,
+        "comments": 1
+      }
+    },
+    "EirosAgent/Managers/VisionManager.swift": {
+      "issues": [
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Функция содержит 253 строк (рекомендуется < 50)",
+          "file": "EirosAgent/Managers/VisionManager.swift"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: AVFoundation",
+          "file": "EirosAgent/Managers/VisionManager.swift"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 307,
+        "functions": 8,
+        "classes": 1,
+        "complexity": 37,
+        "comments": 1
+      }
+    },
+    "EirosAgent/Managers/EnhancedLLMManager.swift": {
+      "issues": [
+        {
+          "type": "Force Unwrapping",
+          "severity": "Medium",
+          "message": "Найдено 6 принудительных извлечений опционалов",
+          "details": [
+            "Hello!",
+            "screen!",
+            "explore!",
+            "Hello!",
+            "assistant!"
+          ],
+          "file": "EirosAgent/Managers/EnhancedLLMManager.swift"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Функция содержит 392 строк (рекомендуется < 50)",
+          "file": "EirosAgent/Managers/EnhancedLLMManager.swift"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: Combine",
+          "file": "EirosAgent/Managers/EnhancedLLMManager.swift"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 461,
+        "functions": 16,
+        "classes": 1,
+        "complexity": 84,
+        "comments": 1
+      }
+    },
+    "EirosAgent/Managers/LLMManager.swift": {
+      "issues": [
+        {
+          "type": "Force Unwrapping",
+          "severity": "Medium",
+          "message": "Найдено 3 принудительных извлечений опционалов",
+          "details": [
+            "Hello!",
+            "Hello!",
+            "tasks!"
+          ],
+          "file": "EirosAgent/Managers/LLMManager.swift"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Функция содержит 124 строк (рекомендуется < 50)",
+          "file": "EirosAgent/Managers/LLMManager.swift"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: Combine",
+          "file": "EirosAgent/Managers/LLMManager.swift"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 150,
+        "functions": 10,
+        "classes": 1,
+        "complexity": 22,
+        "comments": 1
+      }
+    },
+    "EirosAgent/Managers/WebViewManager.swift": {
+      "issues": [
+        {
+          "type": "Force Unwrapping",
+          "severity": "Medium",
+          "message": "Найдено 3 принудительных извлечений опционалов",
+          "details": [
+            "WKNavigation!",
+            "WKNavigation!",
+            "WKNavigation!"
+          ],
+          "file": "EirosAgent/Managers/WebViewManager.swift"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Функция содержит 206 строк (рекомендуется < 50)",
+          "file": "EirosAgent/Managers/WebViewManager.swift"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: WebKit",
+          "file": "EirosAgent/Managers/WebViewManager.swift"
+        },
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: Combine",
+          "file": "EirosAgent/Managers/WebViewManager.swift"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 278,
+        "functions": 19,
+        "classes": 1,
+        "complexity": 28,
+        "comments": 1
+      }
+    },
+    "tests/test_web_automation.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 169,
+        "functions": 14,
+        "classes": 3,
+        "complexity": 5,
+        "comments": 6
+      }
+    },
+    "tests/test_core.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 114,
+        "functions": 9,
+        "classes": 2,
+        "complexity": 9,
+        "comments": 10
+      }
+    },
+    "examples/advanced_web_automation.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 203,
+        "functions": 5,
+        "classes": 0,
+        "complexity": 17,
+        "comments": 23
+      }
+    },
+    "examples/basic_usage.py": {
+      "issues": [
+        {
+          "type": "Code Quality",
+          "severity": "Low",
+          "message": "Возможно неиспользуемый импорт: Path",
+          "file": "examples/basic_usage.py"
+        }
+      ],
+      "metrics": {
+        "lines_of_code": 176,
+        "functions": 7,
+        "classes": 0,
+        "complexity": 13,
+        "comments": 18
+      }
+    },
+    "examples/control_room_example.py": {
+      "issues": [],
+      "metrics": {
+        "lines_of_code": 97,
+        "functions": 1,
+        "classes": 0,
+        "complexity": 15,
+        "comments": 11
+      }
+    }
+  },
+  "recommendations": [
+    {
+      "priority": "High",
+      "title": "Проблемы высокого приоритета",
+      "description": "Исправьте проблемы высокого приоритета в ближайшее время",
+      "count": 5
+    },
+    {
+      "priority": "Medium",
+      "title": "Безопасная работа с опционалами",
+      "description": "Замените принудительное извлечение на безопасные методы (guard, if let)",
+      "count": 3
+    },
+    {
+      "priority": "Medium",
+      "title": "Снижение сложности кода",
+      "description": "Рефакторинг сложных функций для улучшения читаемости",
+      "complexity": 2335
+    }
+  ]
+}
