@@ -204,7 +204,7 @@ class AutomationController: ObservableObject {
         }
     }
     
-    private func analyzeScreenshot(_ screenshot: UIImage, for step: AutomationStep) async -> ScreenAnalysisResult? {
+    private func analyzeScreenshot(_ screenshot: UIImage, for step: AutomationStep) async -> AutomationAnalysisResult? {
         switch automationMode {
         case .manual:
             return await analyzeWithVisionFramework(screenshot)
@@ -217,10 +217,10 @@ class AutomationController: ObservableObject {
         }
     }
     
-    private func analyzeWithVisionFramework(_ screenshot: UIImage) async -> ScreenAnalysisResult? {
+    private func analyzeWithVisionFramework(_ screenshot: UIImage) async -> AutomationAnalysisResult? {
         let result = await visionManager.analyzeScreen(screenshot)
         
-        return ScreenAnalysisResult(
+        return AutomationAnalysisResult(
             elements: result.uiElements,
             textContent: result.detectedText.map { $0.text }.joined(separator: " "),
             confidence: 0.8,
@@ -228,7 +228,7 @@ class AutomationController: ObservableObject {
         )
     }
     
-    private func analyzeWithQwen2VL(_ screenshot: UIImage, step: AutomationStep) async -> ScreenAnalysisResult? {
+    private func analyzeWithQwen2VL(_ screenshot: UIImage, step: AutomationStep) async -> AutomationAnalysisResult? {
         let intent = AutomationIntent(
             type: step.action.automationIntentType,
             description: step.description,
@@ -249,7 +249,7 @@ class AutomationController: ObservableObject {
             )
         }
         
-        return ScreenAnalysisResult(
+        return AutomationAnalysisResult(
             elements: elements,
             textContent: result.detectedElements.map { $0.text }.joined(separator: " "),
             confidence: result.confidence,
@@ -257,14 +257,14 @@ class AutomationController: ObservableObject {
         )
     }
     
-    private func analyzeWithOpenRouter(_ screenshot: UIImage, step: AutomationStep) async -> ScreenAnalysisResult? {
+    private func analyzeWithOpenRouter(_ screenshot: UIImage, step: AutomationStep) async -> AutomationAnalysisResult? {
         let context = "Analyze this screenshot for UI automation. I need to \(step.description). Please identify relevant UI elements and their coordinates."
         
         let analysisText = await openRouterManager.analyzeScreenWithContext(image: screenshot, context: context)
         
         // Parse OpenRouter response (simplified)
         // In a real implementation, this would parse structured data
-        return ScreenAnalysisResult(
+        return AutomationAnalysisResult(
             elements: [], // Would parse from OpenRouter response
             textContent: analysisText,
             confidence: 0.7,
@@ -272,7 +272,7 @@ class AutomationController: ObservableObject {
         )
     }
     
-    private func analyzeWithHybridApproach(_ screenshot: UIImage, step: AutomationStep) async -> ScreenAnalysisResult? {
+    private func analyzeWithHybridApproach(_ screenshot: UIImage, step: AutomationStep) async -> AutomationAnalysisResult? {
         // Use Vision Framework for basic detection
         let visionResult = await analyzeWithVisionFramework(screenshot)
         
@@ -282,7 +282,7 @@ class AutomationController: ObservableObject {
             
             // Combine results
             if let vision = visionResult, let qwen = qwenResult {
-                return ScreenAnalysisResult(
+                return AutomationAnalysisResult(
                     elements: vision.elements + qwen.elements,
                     textContent: "\(vision.textContent)\n\(qwen.textContent)",
                     confidence: (vision.confidence + qwen.confidence) / 2,
@@ -296,7 +296,7 @@ class AutomationController: ObservableObject {
     
     // MARK: - Action Execution
     
-    private func executeStepAction(_ step: AutomationStep, with analysis: ScreenAnalysisResult) async -> Bool {
+    private func executeStepAction(_ step: AutomationStep, with analysis: AutomationAnalysisResult) async -> Bool {
         switch step.action {
         case .tap(let selector):
             return await executeTapAction(selector: selector, analysis: analysis)
@@ -313,7 +313,7 @@ class AutomationController: ObservableObject {
         }
     }
     
-    private func executeTapAction(selector: String, analysis: ScreenAnalysisResult) async -> Bool {
+    private func executeTapAction(selector: String, analysis: AutomationAnalysisResult) async -> Bool {
         // Find element to tap
         let targetElement = findElement(selector: selector, in: analysis.elements)
         
@@ -339,7 +339,7 @@ class AutomationController: ObservableObject {
         return success
     }
     
-    private func executeTypeAction(text: String, selector: String, analysis: ScreenAnalysisResult) async -> Bool {
+    private func executeTypeAction(text: String, selector: String, analysis: AutomationAnalysisResult) async -> Bool {
         // Find text input element
         let targetElement = findElement(selector: selector, in: analysis.elements)
         
@@ -369,7 +369,7 @@ class AutomationController: ObservableObject {
         return false
     }
     
-    private func executeScrollAction(direction: ScrollDirection, analysis: ScreenAnalysisResult) async -> Bool {
+    private func executeScrollAction(direction: ScrollDirection, analysis: AutomationAnalysisResult) async -> Bool {
         guard let webViewManager = webViewManager else {
             return false
         }
@@ -408,7 +408,7 @@ class AutomationController: ObservableObject {
         return true
     }
     
-    private func executeCustomAction(_ action: String, analysis: ScreenAnalysisResult) async -> Bool {
+    private func executeCustomAction(_ action: String, analysis: AutomationAnalysisResult) async -> Bool {
         addLogEntry("Executing custom action: \(action)", type: .info)
         
         // Custom action implementation would go here
@@ -580,7 +580,7 @@ enum AutomationMode: String, CaseIterable {
     }
 }
 
-struct ScreenAnalysisResult {
+struct AutomationAnalysisResult {
     let elements: [UIElement]
     let textContent: String
     let confidence: Float

@@ -66,18 +66,7 @@ struct VisionAnalysisResult {
     }
 }
 
-struct DetectedText: Codable, Identifiable {
-    let id = UUID()
-    let text: String
-    let boundingBox: CGRect
-    let confidence: Float
-    
-    init(text: String, boundingBox: CGRect, confidence: Float) {
-        self.text = text
-        self.boundingBox = boundingBox
-        self.confidence = confidence
-    }
-}
+
 
 // MARK: - Automation Intent Models
 
@@ -166,35 +155,3 @@ enum Qwen2VLElementType: String, CaseIterable, Codable {
     }
 }
 
-// MARK: - OpenRouter Models
-
-enum OpenRouterModel: String, CaseIterable {
-    case gpt4o = "openai/gpt-4o"
-    case gpt4oMini = "openai/gpt-4o-mini"
-    case claude35Sonnet = "anthropic/claude-3.5-sonnet"
-    case claude3Haiku = "anthropic/claude-3-haiku"
-    case llama31_8b = "meta-llama/llama-3.1-8b-instruct"
-    case llama31_70b = "meta-llama/llama-3.1-70b-instruct"
-    
-    var displayName: String {
-        switch self {
-        case .gpt4o: return "GPT-4o"
-        case .gpt4oMini: return "GPT-4o Mini"
-        case .claude35Sonnet: return "Claude 3.5 Sonnet"
-        case .claude3Haiku: return "Claude 3 Haiku"
-        case .llama31_8b: return "Llama 3.1 8B"
-        case .llama31_70b: return "Llama 3.1 70B"
-        }
-    }
-    
-    var parameters: String {
-        switch self {
-        case .gpt4o: return "~1.76T параметров"
-        case .gpt4oMini: return "~8B параметров"
-        case .claude35Sonnet: return "~200B параметров"
-        case .claude3Haiku: return "~20B параметров"
-        case .llama31_8b: return "8B параметров"
-        case .llama31_70b: return "70B параметров"
-        }
-    }
-}
