@@ -96,78 +96,166 @@ class Qwen2VLManager: NSObject, ObservableObject {
     // MARK: - Model Loading
     
     func loadModel() async {
-        guard !isModelLoaded else { return }
+        guard !isModelLoaded else { 
+            print("Qwen2-VL-2B server already connected")
+            return 
+        }
         
         isProcessing = true
         modelError = nil
         modelLoadingProgress = 0.0
         
         do {
-            await updateLoadingProgress(0.1, message: "Initializing llama.cpp...")
+            await updateLoadingProgress(0.1, message: "Connecting to Qwen2-VL server...")
             
-            // Initialize llama.cpp
-            let initResult = llamacpp_init()
-            guard initResult == 0 else {
-                throw ModelError.initializationFailed("llama.cpp initialization failed with code: \(initResult)")
+            // Check server health
+            let serverHealthy = await checkServerHealth()
+            guard serverHealthy else {
+                throw ModelError.initializationFailed("Python server is not responding. Please start qwen2vl_server.py")
             }
             
-            await updateLoadingProgress(0.2, message: "Checking GPU support...")
+            await updateLoadingProgress(0.3, message: "Waiting for model to load on server...")
             
-            // Check GPU support
-            let hasGPU = llamacpp_has_gpu_support() == 1
-            print("GPU support available: \(hasGPU)")
-            
-            await updateLoadingProgress(0.3, message: "Loading Qwen2-VL-2B model...")
-            
-            // Get model path from bundle or documents directory
-            let modelPath = getModelPath()
-            guard !modelPath.isEmpty else {
-                throw ModelError.modelNotFound("Qwen2-VL-2B model file not found")
+            // Wait for model to load on server
+            let modelLoaded = await waitForServerModelLoad()
+            guard modelLoaded else {
+                throw ModelError.loadingFailed("Server model failed to load within timeout")
             }
             
-            await updateLoadingProgress(0.5, message: "Configuring model parameters...")
+            await updateLoadingProgress(0.8, message: "Testing server connection...")
             
-            // Configure model parameters for optimal performance
-            var params = llamacpp_default_params()
-            params.n_ctx = 4096 // Large context for screen analysis
-            params.n_gpu_layers = hasGPU ? 32 : 0 // Use GPU if available
-            params.temperature = 0.1 // Low temperature for consistent UI analysis
-            params.n_batch = 512
-            
-            await updateLoadingProgress(0.7, message: "Loading model weights...")
-            
-            // Load model with parameters
-            let modelContext = llamacpp_load_model_with_params(modelPath, params)
-            guard modelContext != nil else {
-                throw ModelError.loadingFailed("Failed to load Qwen2-VL-2B model")
+            // Test server connection
+            let connectionWorking = await testServerConnection()
+            guard connectionWorking else {
+                throw ModelError.inferenceFailed("Server connection test failed")
             }
             
-            // Store model context (in real implementation, you'd store this properly)
-            // For now, we'll just mark as loaded
-            
-            await updateLoadingProgress(0.9, message: "Setting up vision pipeline...")
-            
-            // Setup Core ML vision pipeline
-            await setupVisionPipeline()
-            
-            await updateLoadingProgress(0.95, message: "Optimizing for device...")
-            
-            // Device-specific optimizations
-            await optimizeForDevice()
-            
-            await updateLoadingProgress(1.0, message: "Qwen2-VL-2B ready!")
+            await updateLoadingProgress(1.0, message: "Qwen2-VL server ready!")
             
             isModelLoaded = true
             updateMemoryUsage()
             
-            print("Qwen2-VL-2B model loaded successfully")
+            print("✅ Qwen2-VL-2B server connection established!")
             
         } catch {
-            modelError = "Failed to load Qwen2-VL-2B model: \(error.localizedDescription)"
-            print("Model loading error: \(error)")
+            modelError = "Failed to connect to Qwen2-VL server: \(error.localizedDescription)"
+            print("❌ Server connection error: \(error)")
         }
         
         isProcessing = false
+    }
+    
+    private func checkServerHealth() async -> Bool {
+        do {
+            guard let url = URL(string: "http://localhost:8888/health") else { return false }
+            
+            var request = URLRequest(url: url)
+            request.timeoutInterval = 5.0
+            
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse,
+               httpResponse.statusCode == 200,
+               let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let status = json["status"] as? String {
+                return status == "healthy"
+            }
+            
+            return false
+        } catch {
+            print("❌ Server health check failed: \(error)")
+            return false
+        }
+    }
+    
+    private func waitForServerModelLoad() async -> Bool {
+        let maxWaitTime: TimeInterval = 120.0 // 2 minutes max wait for model loading
+        let checkInterval: TimeInterval = 2.0 // Check every 2 seconds
+        let startTime = Date()
+        
+        while Date().timeIntervalSince(startTime) < maxWaitTime {
+            do {
+                guard let url = URL(string: "http://localhost:8888/model_status") else { return false }
+                
+                var request = URLRequest(url: url)
+                request.timeoutInterval = 5.0
+                
+                let (data, response) = try await URLSession.shared.data(for: request)
+                
+                if let httpResponse = response as? HTTPURLResponse,
+                   httpResponse.statusCode == 200,
+                   let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                    
+                    if let loaded = json["loaded"] as? Bool, loaded {
+                        return true
+                    }
+                    
+                    if let progress = json["progress"] as? Double {
+                        let mappedProgress = 0.3 + (progress * 0.4) // Map server progress to our 30-70% range
+                        await updateLoadingProgress(Float(mappedProgress), message: "Server loading model... \(Int(progress * 100))%")
+                    }
+                }
+                
+                // Wait before next check
+                try await Task.sleep(nanoseconds: UInt64(checkInterval * 1_000_000_000))
+                
+            } catch {
+                print("❌ Error checking server model status: \(error)")
+                try? await Task.sleep(nanoseconds: UInt64(checkInterval * 1_000_000_000))
+            }
+        }
+        
+        return false
+    }
+    
+    private func testServerConnection() async -> Bool {
+        do {
+            // Create a small test image (1x1 pixel)
+            UIGraphicsBeginImageContextWithOptions(CGSize(width: 1, height: 1), false, 1.0)
+            UIColor.white.setFill()
+            UIRectFill(CGRect(x: 0, y: 0, width: 1, height: 1))
+            let testImage = UIGraphicsGetImageFromCurrentImageContext() ?? UIImage()
+            UIGraphicsEndImageContext()
+            
+            guard let imageData = testImage.jpegData(compressionQuality: 0.8) else { return false }
+            
+            let base64Image = imageData.base64EncodedString()
+            let requestBody: [String: Any] = [
+                "image": base64Image,
+                "prompt": "Test connection - describe this image briefly",
+                "task_type": "general"
+            ]
+            
+            guard let url = URL(string: "http://localhost:8888/analyze") else { return false }
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.timeoutInterval = 15.0
+            request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+            
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse,
+               httpResponse.statusCode == 200,
+               let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let success = json["success"] as? Bool {
+                
+                if success {
+                    print("✅ Server connection test successful")
+                    return true
+                } else {
+                    let error = json["error"] as? String ?? "Unknown error"
+                    print("❌ Server returned error: \(error)")
+                    return false
+                }
+            }
+            
+            return false
+        } catch {
+            print("❌ Server connection test failed: \(error)")
+            return false
+        }
     }
     
     private func getModelPath() -> String {
@@ -302,45 +390,88 @@ class Qwen2VLManager: NSObject, ObservableObject {
         let startTime = Date()
         
         do {
-            // Convert image to base64 for processing
+            // Convert image to base64 for HTTP transmission
             guard let imageData = image.jpegData(compressionQuality: 0.8) else {
                 throw ModelError.inferenceFailed("Failed to convert image to JPEG data")
             }
             
-            // Create vision-language prompt for Qwen2-VL-2B
-            let visionPrompt = createVisionLanguagePrompt(for: task, with: prompt)
+            let base64Image = imageData.base64EncodedString()
             
-            // Perform real inference using llama.cpp bridge
-            // Note: In a full implementation, you'd pass the image data along with the prompt
-            let responsePtr = llamacpp_generate(nil, visionPrompt, 512, 0.1, nil)
+            // Create request payload
+            let requestBody: [String: Any] = [
+                "image": base64Image,
+                "prompt": prompt,
+                "task_type": task.type.rawValue
+            ]
             
-            guard let responsePtr = responsePtr else {
-                throw ModelError.inferenceFailed("Model inference returned null")
+            // Make HTTP request to Python server
+            guard let url = URL(string: "http://localhost:8888/analyze") else {
+                throw ModelError.inferenceFailed("Invalid server URL")
             }
             
-            let response = String(cString: responsePtr)
-            free(responsePtr) // Free the allocated memory
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.timeoutInterval = 30.0 // 30 second timeout
+            
+            do {
+                request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+            } catch {
+                throw ModelError.inferenceFailed("Failed to serialize request: \(error.localizedDescription)")
+            }
+            
+            // Perform the request
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            // Check HTTP response
+            if let httpResponse = response as? HTTPURLResponse {
+                guard httpResponse.statusCode == 200 else {
+                    throw ModelError.inferenceFailed("Server returned status code: \(httpResponse.statusCode)")
+                }
+            }
+            
+            // Parse response
+            guard let jsonResponse = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                throw ModelError.inferenceFailed("Invalid JSON response from server")
+            }
+            
+            // Check if inference was successful
+            guard let success = jsonResponse["success"] as? Bool, success else {
+                let errorMessage = jsonResponse["error"] as? String ?? "Unknown server error"
+                throw ModelError.inferenceFailed("Server error: \(errorMessage)")
+            }
+            
+            // Extract response data
+            let modelResponse = jsonResponse["response"] as? String ?? ""
+            let confidence = jsonResponse["confidence"] as? Double ?? 0.0
+            let serverProcessingTime = jsonResponse["processing_time"] as? Double ?? 0.0
+            let parsedResponse = jsonResponse["parsed_response"] as? [String: Any] ?? [:]
             
             // Parse the model response to extract UI elements and coordinates
-            let elements = parseModelResponse(response, for: task, in: image)
+            let elements = parseRealModelResponse(modelResponse, parsedResponse: parsedResponse, for: task, in: image)
             let coordinates = elements.compactMap { 
                 coordinateMapper.convertToScreenCoordinates($0.boundingBox, imageSize: image.size) 
             }
             
-            let processingTime = Date().timeIntervalSince(startTime)
+            let totalProcessingTime = Date().timeIntervalSince(startTime)
             
             return UIAutomationResult(
                 success: true,
                 error: nil,
                 elements: elements,
                 coordinates: coordinates,
-                confidence: calculateConfidence(from: response),
-                processingTime: processingTime,
-                modelResponse: response
+                confidence: Float(confidence),
+                processingTime: totalProcessingTime,
+                modelResponse: modelResponse,
+                serverProcessingTime: serverProcessingTime
             )
             
         } catch {
             let processingTime = Date().timeIntervalSince(startTime)
+            
+            // Log the error for debugging
+            print("❌ Qwen2VL inference failed: \(error.localizedDescription)")
+            
             return UIAutomationResult(
                 success: false,
                 error: error.localizedDescription,
@@ -421,6 +552,152 @@ class Qwen2VLManager: NSObject, ObservableObject {
         
         // Fallback to text parsing or default elements
         return generateFallbackElements(for: task, in: image)
+    }
+    
+    private func parseRealModelResponse(_ response: String, parsedResponse: [String: Any], for task: UIAutomationTask, in image: UIImage) -> [UIAutomationElement] {
+        var elements: [UIAutomationElement] = []
+        
+        // First, try to use the parsed response from the server
+        if let serverElements = parsedResponse["elements"] as? [[String: Any]] {
+            for elementDict in serverElements {
+                if let type = elementDict["type"] as? String,
+                   let description = elementDict["description"] as? String,
+                   let confidence = elementDict["confidence"] as? Double {
+                    
+                    let elementType = UIElementType(rawValue: type) ?? .unknown
+                    
+                    // Generate reasonable bounding box based on element type and image size
+                    let boundingBox = generateBoundingBox(for: elementType, in: image, description: description)
+                    
+                    let element = UIAutomationElement(
+                        type: elementType,
+                        text: description,
+                        boundingBox: boundingBox,
+                        confidence: confidence,
+                        isInteractable: elementType == .button || elementType == .textField
+                    )
+                    
+                    elements.append(element)
+                }
+            }
+        }
+        
+        // If no elements from parsed response, try to extract from raw text
+        if elements.isEmpty {
+            elements = extractElementsFromText(response, for: task, in: image)
+        }
+        
+        // If still no elements, use fallback
+        if elements.isEmpty {
+            elements = generateFallbackElements(for: task, in: image)
+        }
+        
+        return elements
+    }
+    
+    private func extractElementsFromText(_ text: String, for task: UIAutomationTask, in image: UIImage) -> [UIAutomationElement] {
+        var elements: [UIAutomationElement] = []
+        let lowercaseText = text.lowercased()
+        
+        // Extract buttons
+        if lowercaseText.contains("button") {
+            let buttonRegex = try? NSRegularExpression(pattern: "button[^.]*", options: .caseInsensitive)
+            let matches = buttonRegex?.matches(in: text, options: [], range: NSRange(location: 0, length: text.count)) ?? []
+            
+            for match in matches {
+                if let range = Range(match.range, in: text) {
+                    let buttonText = String(text[range])
+                    let boundingBox = generateBoundingBox(for: .button, in: image, description: buttonText)
+                    
+                    elements.append(UIAutomationElement(
+                        type: .button,
+                        text: buttonText,
+                        boundingBox: boundingBox,
+                        confidence: 0.8,
+                        isInteractable: true
+                    ))
+                }
+            }
+        }
+        
+        // Extract text fields
+        if lowercaseText.contains("text field") || lowercaseText.contains("input") {
+            let textFieldRegex = try? NSRegularExpression(pattern: "(text field|input)[^.]*", options: .caseInsensitive)
+            let matches = textFieldRegex?.matches(in: text, options: [], range: NSRange(location: 0, length: text.count)) ?? []
+            
+            for match in matches {
+                if let range = Range(match.range, in: text) {
+                    let fieldText = String(text[range])
+                    let boundingBox = generateBoundingBox(for: .textField, in: image, description: fieldText)
+                    
+                    elements.append(UIAutomationElement(
+                        type: .textField,
+                        text: fieldText,
+                        boundingBox: boundingBox,
+                        confidence: 0.8,
+                        isInteractable: true
+                    ))
+                }
+            }
+        }
+        
+        // For text extraction tasks, create text elements
+        if task.type == .extractText {
+            let lines = text.components(separatedBy: .newlines).filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+            
+            for (index, line) in lines.enumerated() {
+                let y = CGFloat(index) * 30 + 50 // Approximate line spacing
+                let boundingBox = CGRect(x: 20, y: y, width: image.size.width - 40, height: 25)
+                
+                elements.append(UIAutomationElement(
+                    type: .label,
+                    text: line.trimmingCharacters(in: .whitespaces),
+                    boundingBox: boundingBox,
+                    confidence: 0.9,
+                    isInteractable: false
+                ))
+            }
+        }
+        
+        return elements
+    }
+    
+    private func generateBoundingBox(for elementType: UIElementType, in image: UIImage, description: String) -> CGRect {
+        let imageSize = image.size
+        
+        switch elementType {
+        case .button:
+            // Buttons are typically in the center or bottom of the screen
+            let width: CGFloat = 120
+            let height: CGFloat = 44
+            let x = (imageSize.width - width) / 2
+            let y = imageSize.height * 0.7 // 70% down the screen
+            return CGRect(x: x, y: y, width: width, height: height)
+            
+        case .textField:
+            // Text fields are typically in the upper-middle area
+            let width: CGFloat = imageSize.width * 0.8
+            let height: CGFloat = 40
+            let x = (imageSize.width - width) / 2
+            let y = imageSize.height * 0.3 // 30% down the screen
+            return CGRect(x: x, y: y, width: width, height: height)
+            
+        case .label:
+            // Labels can be anywhere, default to top area
+            let width: CGFloat = imageSize.width * 0.9
+            let height: CGFloat = 20
+            let x = imageSize.width * 0.05
+            let y = imageSize.height * 0.2
+            return CGRect(x: x, y: y, width: width, height: height)
+            
+        default:
+            // Default bounding box
+            let width: CGFloat = 100
+            let height: CGFloat = 30
+            let x = (imageSize.width - width) / 2
+            let y = (imageSize.height - height) / 2
+            return CGRect(x: x, y: y, width: width, height: height)
+        }
     }
     
     private func generateFallbackElements(for task: UIAutomationTask, in image: UIImage) -> [UIAutomationElement] {
@@ -623,8 +900,9 @@ struct UIAutomationResult {
     let confidence: Double
     let processingTime: TimeInterval
     let modelResponse: String?
+    let serverProcessingTime: TimeInterval?
     
-    init(success: Bool, error: String?, elements: [UIAutomationElement], coordinates: [CGPoint], confidence: Double, processingTime: TimeInterval, modelResponse: String? = nil) {
+    init(success: Bool, error: String?, elements: [UIAutomationElement], coordinates: [CGPoint], confidence: Double, processingTime: TimeInterval, modelResponse: String? = nil, serverProcessingTime: TimeInterval? = nil) {
         self.success = success
         self.error = error
         self.elements = elements
@@ -632,5 +910,6 @@ struct UIAutomationResult {
         self.confidence = confidence
         self.processingTime = processingTime
         self.modelResponse = modelResponse
+        self.serverProcessingTime = serverProcessingTime
     }
 }
