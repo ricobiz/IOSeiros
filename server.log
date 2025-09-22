@@ -1,0 +1,17 @@
+INFO:__main__:🚀 Starting Qwen2-VL Demo Server on localhost:8888
+INFO:__main__:📝 This is a demo server that simulates Qwen2-VL responses
+🚀 Qwen2-VL Demo Server
+==================================================
+📝 This is a DEMO server that simulates model responses
+🔗 For production, use qwen2vl_server.py with real model
+==================================================
+📡 Server: http://localhost:8888
+🔗 Endpoints:
+  • Health: http://localhost:8888/health
+  • Stats: http://localhost:8888/stats
+  • Analyze: http://localhost:8888/analyze (POST)
+==================================================
+ * Serving Flask app 'qwen2vl_demo_server'
+ * Debug mode: off
+Address already in use
+Port 8888 is in use by another program. Either identify and stop that program, or start the server with a different port.

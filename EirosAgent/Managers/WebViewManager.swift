@@ -19,10 +19,28 @@ class WebViewManager: NSObject, ObservableObject {
     @Published var currentURL: URL?
     @Published var pageTitle: String = ""
     @Published var ocrResults: [String] = []
+    @Published var isProxyEnabled = false
+    
+    // MARK: - Proxy Integration
+    private let proxyManager = ProxyManager.shared
+    private var cancellables = Set<AnyCancellable>()
     
     lazy var webView: WKWebView = {
+        let configuration = createWebViewConfiguration()
+        
+        let webView = WKWebView(frame: .zero, configuration: configuration)
+        webView.navigationDelegate = self
+        webView.uiDelegate = self
+        
+        return webView
+    }()
+    
+    private func createWebViewConfiguration() -> WKWebViewConfiguration {
         let configuration = WKWebViewConfiguration()
         configuration.userContentController = WKUserContentController()
+        
+        // Configure proxy settings
+        setupProxyConfiguration(configuration)
         
         // Inject agent.js script
         if let agentScript = loadAgentScript() {
@@ -33,15 +51,90 @@ class WebViewManager: NSObject, ObservableObject {
         // Add message handler for agent communication
         configuration.userContentController.add(self, name: "eirosAgent")
         
-        let webView = WKWebView(frame: .zero, configuration: configuration)
-        webView.navigationDelegate = self
-        webView.uiDelegate = self
+        // DECODO unblocker optimizations
+        configuration.allowsInlineMediaPlayback = true
+        configuration.mediaTypesRequiringUserActionForPlayback = []
+        configuration.suppressesIncrementalRendering = false
         
-        return webView
-    }()
+        return configuration
+    }
+    
+    private func setupProxyConfiguration(_ configuration: WKWebViewConfiguration) {
+        // Get proxy configuration from ProxyManager
+        if let proxyDict = proxyManager.getWebViewProxyConfiguration() {
+            // Apply proxy settings to WebView configuration
+            configuration.setValue(proxyDict, forKey: "_proxyConfiguration")
+            isProxyEnabled = true
+            print("✅ WebView configured with DECODO proxy")
+        } else {
+            isProxyEnabled = false
+            print("ℹ️ WebView using direct connection (no proxy)")
+        }
+    }
     
     override init() {
         super.init()
+        setupProxyMonitoring()
+    }
+    
+    // MARK: - Proxy Monitoring
+    
+    private func setupProxyMonitoring() {
+        // Monitor proxy status changes
+        proxyManager.$isProxyEnabled
+            .combineLatest(proxyManager.$proxyStatus)
+            .sink { [weak self] isEnabled, status in
+                self?.isProxyEnabled = isEnabled
+                
+                // Reload WebView configuration when proxy status changes
+                if status == .connected || status == .disconnected {
+                    Task { @MainActor in
+                        await self?.reconfigureWebViewProxy()
+                    }
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func reconfigureWebViewProxy() async {
+        // Create new configuration with updated proxy settings
+        let newConfiguration = createWebViewConfiguration()
+        
+        // Create new WebView with updated configuration
+        let newWebView = WKWebView(frame: webView.frame, configuration: newConfiguration)
+        newWebView.navigationDelegate = self
+        newWebView.uiDelegate = self
+        
+        // Preserve current URL
+        if let currentURL = webView.url {
+            newWebView.load(URLRequest(url: currentURL))
+        }
+        
+        // Replace the old WebView
+        let oldWebView = webView
+        webView = newWebView
+        
+        print("🔄 WebView reconfigured with updated proxy settings")
+    }
+    
+    // MARK: - Proxy Control Methods
+    
+    func enableProxyForWebView() async {
+        if let primaryProxy = proxyManager.availableProxies.first(where: { $0.id == "decodo-primary" }) {
+            await proxyManager.enableProxy(with: primaryProxy)
+        }
+    }
+    
+    func disableProxyForWebView() {
+        proxyManager.disableProxy()
+    }
+    
+    func getProxyStatus() -> String {
+        if proxyManager.isProxyEnabled {
+            return proxyManager.getCurrentProxyInfo()
+        } else {
+            return "Direct connection (no proxy)"
+        }
     }
     
     // MARK: - Navigation Methods

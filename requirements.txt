@@ -75,23 +75,6 @@ torch==2.1.1  # For advanced AI features
 transformers==4.35.2  # For NLP tasks
 scikit-learn==1.3.2
 
-# Qwen2VL Integration
-# Core dependencies for multimodal analysis
-torchvision==0.16.1  # For image processing with PyTorch
-accelerate==0.24.1  # For model acceleration
-sentencepiece==0.1.99  # For tokenization
-protobuf==4.25.1  # For model serialization
-
-# Optional: For API-based inference
-aiohttp==3.9.1  # Already included above
-httpx==0.25.2  # Alternative HTTP client
-tenacity==8.2.3  # For retry logic
-
-# Optional: For enhanced image processing
-opencv-contrib-python==4.8.1.78  # Extended OpenCV features
-imageio==2.31.6  # Additional image I/O formats
-matplotlib==3.8.2  # For visualization (optional)
-
 # Platform-specific dependencies
 # Windows
 pywin32==306; sys_platform == "win32"
