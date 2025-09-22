@@ -42,12 +42,12 @@ struct ControlRoomView: View {
                 
                 // Chat Interface
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 16) {
+                    LazyVStack(spacing: 8) {
                         ForEach(llmManager.chatHistory, id: \.id) { message in
-                            ChatMessageView(message: message)
+                            MessageBubbleView(message: message)
                         }
                     }
-                    .padding()
+                    .padding(.vertical)
                 }
                 
                 Spacer()
@@ -91,42 +91,7 @@ struct ControlRoomView: View {
     }
 }
 
-struct ChatMessageView: View {
-    let message: ChatMessage
-    
-    var body: some View {
-        HStack {
-            if message.isUser {
-                Spacer()
-                VStack(alignment: .trailing) {
-                    Text(message.content)
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(16)
-                        .frame(maxWidth: UIScreen.main.bounds.width * 0.75, alignment: .trailing)
-                }
-            } else {
-                VStack(alignment: .leading) {
-                    HStack {
-                        Image(systemName: "brain")
-                            .foregroundColor(.purple)
-                        Text("Eiros")
-                            .font(.caption)
-                            .bold()
-                            .foregroundColor(.purple)
-                    }
-                    Text(message.content)
-                        .padding()
-                        .background(Color.gray.opacity(0.2))
-                        .cornerRadius(16)
-                        .frame(maxWidth: UIScreen.main.bounds.width * 0.75, alignment: .leading)
-                }
-                Spacer()
-            }
-        }
-    }
-}
+
 
 #Preview {
     ControlRoomView()
