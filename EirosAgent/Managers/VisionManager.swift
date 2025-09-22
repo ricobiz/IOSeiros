@@ -208,7 +208,35 @@ class VisionManager: NSObject, ObservableObject {
             updateProcessingMetrics(startTime: startTime)
         }
         
-        // Perform comprehensive screen analysis
+        // Use Qwen2-VL for enhanced analysis when available
+        let qwen2VLManager = Qwen2VLManager.shared
+        if qwen2VLManager.isModelLoaded {
+            let qwenResult = await qwen2VLManager.analyzeImage(image, prompt: "Perform comprehensive screen analysis including text, objects, and UI elements.")
+            
+            // Convert Qwen2-VL result to ScreenAnalysisResult format
+            let detectedTexts = qwenResult.detectedText.map { text in
+                DetectedText(
+                    text: text,
+                    confidence: qwenResult.confidence,
+                    boundingBox: CGRect(x: 0, y: 0, width: 100, height: 20), // Placeholder bounds
+                    normalizedBoundingBox: CGRect(x: 0, y: 0, width: 0.25, height: 0.025)
+                )
+            }
+            
+            let result = ScreenAnalysisResult(
+                timestamp: Date(),
+                detectedText: detectedTexts,
+                detectedObjects: qwenResult.detectedObjects,
+                uiElements: convertToUIElements(from: qwenResult.detectedObjects),
+                screenDescription: qwenResult.description,
+                processingTime: qwenResult.processingTime
+            )
+            
+            self.lastAnalysisResult = result
+            return result
+        }
+        
+        // Fallback to traditional Vision framework analysis
         async let textResults = recognizeText(in: image)
         async let objectResults = detectObjects(in: image)
         async let uiElements = analyzeUIElements(in: image)
@@ -228,6 +256,31 @@ class VisionManager: NSObject, ObservableObject {
         
         self.lastAnalysisResult = result
         return result
+    }
+    
+    private func convertToUIElements(from objects: [DetectedObject]) -> [UIElement] {
+        return objects.map { object in
+            UIElement(
+                type: mapObjectTypeToUIElementType(object.objectType),
+                text: object.label,
+                boundingBox: object.boundingBox,
+                confidence: object.confidence,
+                isInteractable: object.isInteractable
+            )
+        }
+    }
+    
+    private func mapObjectTypeToUIElementType(_ objectType: ObjectType) -> UIElementType {
+        switch objectType {
+        case .button:
+            return .button
+        case .rectangle:
+            return .textField
+        case .image:
+            return .image
+        default:
+            return .unknown
+        }
     }
     
     // MARK: - Helper Methods
