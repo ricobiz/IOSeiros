@@ -16,15 +16,6 @@ Eiros Agent is built as both an **iOS application** and a **Python automation fr
 - **Screen Analysis**: Comprehensive UI element detection and analysis
 - **SwiftUI Interface**: Modern iOS app with intuitive controls
 
-### 🔍 **NEW: Qwen2VL Multimodal Integration**
-- **Advanced Vision-Language Analysis**: State-of-the-art multimodal understanding
-- **Scene Description**: Generate detailed natural language descriptions of images
-- **Visual Reasoning**: Answer complex questions about image content
-- **UI Element Analysis**: Intelligent analysis of user interface components
-- **Text Extraction**: Advanced OCR with contextual understanding
-- **Batch Processing**: Efficient analysis of multiple images
-- **Flexible Deployment**: Support for both API-based and local inference
-
 ### 🌐 **Stage 2: Advanced Web Automation & OCR**
 - **Multi-browser Support**: Chromium, Firefox, WebKit with Playwright
 - **JavaScript Injection**: Stealth mode capabilities and pre-built templates
