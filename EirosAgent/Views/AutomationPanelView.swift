@@ -12,8 +12,10 @@ struct AutomationPanelView: View {
     @StateObject private var automationController = AutomationController.shared
     @StateObject private var touchGridSystem = TouchGridSystem.shared
     @StateObject private var qwen2VLManager = Qwen2VLManager.shared
+    @StateObject private var proxyManager = ProxyManager.shared
     @State private var selectedMode: AutomationMode = .hybrid
     @State private var showingTaskCreator = false
+    @State private var showingProxyControl = false
     
     var body: some View {
         VStack(spacing: 12) {
@@ -53,6 +55,41 @@ struct AutomationPanelView: View {
                 }
             }
             
+            // Proxy Status Section
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Proxy Status")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(proxyStatusColor)
+                            .frame(width: 8, height: 8)
+                        
+                        Text(proxyManager.isProxyEnabled ? "DECODO Active" : "Direct")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                        
+                        if proxyManager.connectionLatency > 0 {
+                            Text("(\(Int(proxyManager.connectionLatency * 1000))ms)")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                
+                Spacer()
+                
+                Button(action: { showingProxyControl = true }) {
+                    Image(systemName: "gear")
+                        .font(.caption)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+            }
+            .padding(.vertical, 4)
+            
             // Quick Actions
             HStack(spacing: 8) {
                 // Screenshot Button
@@ -73,6 +110,19 @@ struct AutomationPanelView: View {
                         Image(systemName: "hand.tap")
                             .font(.title3)
                         Text("Quick Tap")
+                            .font(.caption2)
+                    }
+                }
+                .buttonStyle(.bordered)
+                .disabled(automationController.isAutomationActive)
+                
+                // Proxy Toggle Button
+                Button(action: toggleProxy) {
+                    VStack(spacing: 4) {
+                        Image(systemName: proxyManager.isProxyEnabled ? "shield.fill" : "shield.slash")
+                            .font(.title3)
+                            .foregroundColor(proxyManager.isProxyEnabled ? .green : .gray)
+                        Text("Proxy")
                             .font(.caption2)
                     }
                 }
@@ -154,7 +204,23 @@ struct AutomationPanelView: View {
         .sheet(isPresented: $showingTaskCreator) {
             TaskCreatorView()
         }
+        .sheet(isPresented: $showingProxyControl) {
+            ProxyControlView()
+        }
     }
+    
+    // MARK: - Computed Properties
+    
+    private var proxyStatusColor: Color {
+        switch proxyManager.proxyStatus {
+        case .disconnected: return .gray
+        case .connecting: return .orange
+        case .connected: return .green
+        case .error: return .red
+        }
+    }
+    
+    // MARK: - Action Methods
     
     private func takeScreenshot() {
         let task = AutomationTask(
@@ -183,6 +249,16 @@ struct AutomationPanelView: View {
     
     private func stopAutomation() {
         automationController.stopAutomation()
+    }
+    
+    private func toggleProxy() {
+        Task {
+            if proxyManager.isProxyEnabled {
+                await automationController.disableProxyForAutomation()
+            } else {
+                await automationController.enableProxyForAutomation()
+            }
+        }
     }
 }
 

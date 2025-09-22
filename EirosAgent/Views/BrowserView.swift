@@ -10,8 +10,10 @@ import WebKit
 
 struct BrowserView: View {
     @StateObject private var webViewManager = WebViewManager()
+    @StateObject private var proxyManager = ProxyManager.shared
     @State private var urlText = "https://www.google.com"
     @State private var isLoading = false
+    @State private var showingProxyControl = false
     
     var body: some View {
         NavigationView {
@@ -36,6 +38,19 @@ struct BrowserView: View {
                     }
                     
                     Spacer()
+                    
+                    // Proxy Status Indicator
+                    Button(action: { showingProxyControl = true }) {
+                        HStack(spacing: 4) {
+                            Circle()
+                                .fill(proxyStatusColor)
+                                .frame(width: 8, height: 8)
+                            
+                            Image(systemName: webViewManager.isProxyEnabled ? "shield.fill" : "shield.slash")
+                                .font(.title3)
+                                .foregroundColor(webViewManager.isProxyEnabled ? .green : .gray)
+                        }
+                    }
                     
                     // OCR Button
                     Button(action: captureAndOCR) {
@@ -91,6 +106,20 @@ struct BrowserView: View {
             .onAppear {
                 loadURL()
             }
+            .sheet(isPresented: $showingProxyControl) {
+                ProxyControlView()
+            }
+        }
+    }
+    
+    // MARK: - Computed Properties
+    
+    private var proxyStatusColor: Color {
+        switch proxyManager.proxyStatus {
+        case .disconnected: return .gray
+        case .connecting: return .orange
+        case .connected: return .green
+        case .error: return .red
         }
     }
     

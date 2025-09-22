@@ -53,6 +53,10 @@ class Qwen2VLManager: NSObject, ObservableObject {
     private var inferenceTimes: [TimeInterval] = []
     private let maxInferenceHistory = 20
     
+    // MARK: - Proxy Integration
+    private let proxyManager = ProxyManager.shared
+    private var cancellables = Set<AnyCancellable>()
+    
     // MARK: - Model Information
     let modelInfo = Qwen2VLModelInfo(
         name: "Qwen2-VL-2B",
@@ -152,7 +156,9 @@ class Qwen2VLManager: NSObject, ObservableObject {
             var request = URLRequest(url: url)
             request.timeoutInterval = 5.0
             
-            let (data, response) = try await URLSession.shared.data(for: request)
+            // Use proxy session if available
+            let session = proxyManager.getProxySession()
+            let (data, response) = try await session.data(for: request)
             
             if let httpResponse = response as? HTTPURLResponse,
                httpResponse.statusCode == 200,
@@ -180,7 +186,9 @@ class Qwen2VLManager: NSObject, ObservableObject {
                 var request = URLRequest(url: url)
                 request.timeoutInterval = 5.0
                 
-                let (data, response) = try await URLSession.shared.data(for: request)
+                // Use proxy session if available
+                let session = proxyManager.getProxySession()
+                let (data, response) = try await session.data(for: request)
                 
                 if let httpResponse = response as? HTTPURLResponse,
                    httpResponse.statusCode == 200,
@@ -234,7 +242,9 @@ class Qwen2VLManager: NSObject, ObservableObject {
             request.timeoutInterval = 15.0
             request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
             
-            let (data, response) = try await URLSession.shared.data(for: request)
+            // Use proxy session if available
+            let session = proxyManager.getProxySession()
+            let (data, response) = try await session.data(for: request)
             
             if let httpResponse = response as? HTTPURLResponse,
                httpResponse.statusCode == 200,
@@ -420,8 +430,9 @@ class Qwen2VLManager: NSObject, ObservableObject {
                 throw ModelError.inferenceFailed("Failed to serialize request: \(error.localizedDescription)")
             }
             
-            // Perform the request
-            let (data, response) = try await URLSession.shared.data(for: request)
+            // Perform the request using proxy session if available
+            let session = proxyManager.getProxySession()
+            let (data, response) = try await session.data(for: request)
             
             // Check HTTP response
             if let httpResponse = response as? HTTPURLResponse {

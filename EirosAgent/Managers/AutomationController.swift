@@ -34,6 +34,7 @@ class AutomationController: ObservableObject {
     private let qwen2VLManager = Qwen2VLManager.shared
     private let openRouterManager = OpenRouterManager.shared
     private let enhancedLLMManager = EnhancedLLMManager.shared
+    private let proxyManager = ProxyManager.shared
     
     // MARK: - Private Properties
     private var webViewManager: WebViewManager?
@@ -493,8 +494,54 @@ class AutomationController: ObservableObject {
             "TouchGridSystem": touchGridSystem.isCalibrated,
             "Qwen2VLManager": qwen2VLManager.isModelLoaded,
             "OpenRouterManager": openRouterManager.isConfigured,
-            "WebViewManager": webViewManager != nil
+            "WebViewManager": webViewManager != nil,
+            "ProxyManager": proxyManager.isUsingProxy()
         ]
+    }
+    
+    // MARK: - Proxy Integration Methods
+    
+    func enableProxyForAutomation() async {
+        addLogEntry("Enabling DECODO proxy for automation", type: .info)
+        
+        if let primaryProxy = proxyManager.availableProxies.first(where: { $0.id == "decodo-primary" }) {
+            await proxyManager.enableProxy(with: primaryProxy)
+            
+            if proxyManager.isUsingProxy() {
+                addLogEntry("DECODO proxy enabled successfully", type: .success)
+                
+                // Update WebView if available
+                if let webViewManager = webViewManager {
+                    await webViewManager.reconfigureWebViewProxy()
+                }
+            } else {
+                addLogEntry("Failed to enable DECODO proxy", type: .error)
+            }
+        } else {
+            addLogEntry("DECODO proxy configuration not found", type: .error)
+        }
+    }
+    
+    func disableProxyForAutomation() {
+        addLogEntry("Disabling proxy for automation", type: .info)
+        proxyManager.disableProxy()
+        
+        // Update WebView if available
+        if let webViewManager = webViewManager {
+            Task {
+                await webViewManager.reconfigureWebViewProxy()
+            }
+        }
+        
+        addLogEntry("Proxy disabled", type: .success)
+    }
+    
+    func getProxyStatusForAutomation() -> String {
+        if proxyManager.isUsingProxy() {
+            return "Using \(proxyManager.getCurrentProxyInfo())"
+        } else {
+            return "Direct connection (no proxy)"
+        }
     }
 }
 
