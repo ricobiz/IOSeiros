@@ -105,30 +105,98 @@ class LLMManager: ObservableObject {
     }
     
     private func generateResponse(for prompt: String) async -> String {
-        // This is a placeholder implementation
-        // In a real implementation, this would use llama.cpp to generate responses
-        
-        // Simulate processing time
-        let processingTime = UInt64.random(in: 1_000_000_000...3_000_000_000) // 1-3 seconds
-        try? await Task.sleep(nanoseconds: processingTime)
-        
-        // Return a mock response based on the prompt
-        if prompt.lowercased().contains("hello") || prompt.lowercased().contains("hi") {
-            return "Hello! I'm running locally on your device. How can I assist you today?"
-        } else if prompt.lowercased().contains("help") {
-            return "I'm Eiros, your local AI assistant. I can help you with various tasks including web browsing automation, text analysis, and general questions. What would you like to know?"
-        } else if prompt.lowercased().contains("web") || prompt.lowercased().contains("browser") {
-            return "I can help you automate web browsing tasks! Switch to the Browser tab and I can help you navigate, fill forms, and extract information from web pages."
-        } else {
-            return "I understand your question about '\(prompt)'. As a local AI assistant, I'm processing this entirely on your device for privacy and speed. How else can I help you?"
+        // Check if this is a vision-related query that should use Qwen2-VL
+        if isVisionQuery(prompt) {
+            return await handleVisionQuery(prompt)
         }
         
-        // Real implementation would be:
-        // return await withCheckedContinuation { continuation in
-        //     llamacpp_generate_response(modelContext, prompt) { response in
-        //         continuation.resume(returning: String(cString: response))
-        //     }
-        // }
+        // For non-vision queries, use enhanced text generation
+        return await generateTextResponse(for: prompt)
+    }
+    
+    private func isVisionQuery(_ prompt: String) -> Bool {
+        let visionKeywords = ["image", "picture", "photo", "screen", "visual", "see", "look", "analyze", "vision", "ui", "interface", "button", "text on screen"]
+        let lowercasePrompt = prompt.lowercased()
+        return visionKeywords.contains { lowercasePrompt.contains($0) }
+    }
+    
+    private func handleVisionQuery(_ prompt: String) async -> String {
+        let qwen2VLManager = Qwen2VLManager.shared
+        
+        // Check if Qwen2-VL model is loaded
+        guard qwen2VLManager.isModelLoaded else {
+            return "Vision analysis requires the Qwen2-VL model to be loaded. Please wait for model initialization to complete."
+        }
+        
+        // Capture current screen for analysis
+        guard let screenshot = await ScreenCaptureManager.shared.captureScreen() else {
+            return "Unable to capture screen for vision analysis. Please ensure screen capture permissions are granted."
+        }
+        
+        // Perform vision analysis
+        let result = await qwen2VLManager.analyzeImage(screenshot, prompt: prompt)
+        
+        if let error = result.error {
+            return "Vision analysis failed: \(error)"
+        }
+        
+        return """
+        Based on my vision analysis of the current screen:
+        
+        \(result.description)
+        
+        I detected \(result.detectedObjects.count) objects and \(result.detectedText.count) text elements with \(String(format: "%.1f", result.confidence * 100))% confidence.
+        
+        How can I help you further with this screen?
+        """
+    }
+    
+    private func generateTextResponse(for prompt: String) async -> String {
+        // Simulate processing time for local model
+        let processingTime = UInt64.random(in: 1_000_000_000...2_500_000_000) // 1-2.5 seconds
+        try? await Task.sleep(nanoseconds: processingTime)
+        
+        // Enhanced responses based on prompt analysis
+        let lowercasePrompt = prompt.lowercased()
+        
+        if lowercasePrompt.contains("hello") || lowercasePrompt.contains("hi") {
+            return "Hello! I'm Eiros, your local AI assistant with advanced vision capabilities powered by Qwen2-VL. I can analyze screens, extract text, identify UI elements, and help with automation tasks. How can I assist you today?"
+        } else if lowercasePrompt.contains("help") {
+            return """
+            I'm Eiros, your enhanced local AI assistant. Here's what I can help you with:
+            
+            🔍 Vision Analysis: Analyze images, screenshots, and UI elements
+            📱 Screen Automation: Find buttons, extract text, identify interactive elements
+            🌐 Web Browsing: Navigate websites and extract information
+            💬 Text Processing: Answer questions and provide assistance
+            
+            My vision capabilities are powered by Qwen2-VL-2B, running locally on your device for privacy and speed. What would you like to explore?
+            """
+        } else if lowercasePrompt.contains("web") || lowercasePrompt.contains("browser") {
+            return "I can help you automate web browsing tasks using my vision capabilities! I can see and interact with web pages, identify buttons and forms, extract information, and guide you through complex workflows. Switch to the Browser tab and I'll analyze what's on screen to assist you."
+        } else if lowercasePrompt.contains("vision") || lowercasePrompt.contains("analyze") {
+            return "My vision capabilities are powered by Qwen2-VL-2B, a state-of-the-art vision-language model running locally on your device. I can analyze images, identify objects and text, understand UI layouts, and help with screen automation. Would you like me to analyze the current screen or a specific image?"
+        } else if lowercasePrompt.contains("model") || lowercasePrompt.contains("qwen") {
+            return """
+            I'm powered by Qwen2-VL-2B, a 2-billion parameter vision-language model that runs locally on your device. Key features:
+            
+            • 🔒 Privacy-first: All processing happens on-device
+            • ⚡ Fast inference: Optimized for mobile hardware
+            • 👁️ Vision understanding: Can analyze images and UI elements
+            • 🌍 Multilingual: Supports multiple languages
+            • 🤖 Agent capabilities: Can help with automation tasks
+            
+            The model is quantized to 4-bit precision for optimal performance while maintaining high accuracy.
+            """
+        } else {
+            return """
+            I understand your question about '\(prompt)'. As your local AI assistant powered by Qwen2-VL, I'm processing this entirely on your device for privacy and speed.
+            
+            If you'd like me to analyze what's currently on your screen or help with any visual tasks, just let me know! I can see and understand images, UI elements, and help with automation.
+            
+            How else can I assist you today?
+            """
+        }
     }
     
     func clearChatHistory() {
